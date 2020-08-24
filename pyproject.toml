@@ -15,6 +15,7 @@ psycopg2-binary = "^2.8.4"
 django-extensions = "^3.0.5"
 ipython = "7.13.0"
 django-cors-headers = "^3.4.0"
+redis = "^3.5.3"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.8.3"

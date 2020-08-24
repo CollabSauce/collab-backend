@@ -22,6 +22,21 @@ services:
     stdin_open: true
     tty: true
 
+  collab_backend_worker:
+    container_name: collab_backend_worker
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    entrypoint: ["/app/docker/development-entrypoint.sh"]
+    command: celery -A collab worker -l info
+    volumes:
+      - ".:/app"
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - db
+      - redis
+
   db:
     image: postgres:12.2-alpine
     volumes:

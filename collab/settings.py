@@ -191,6 +191,10 @@ EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
 CELERY_EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # CELERY_EMAIL_BACKEND = os.environ.get('CELERY_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
 
+# Celery
+CELERY_BROKER_URL = os.environ.get('CLOUDAMQP_URL', '')
+CELERY_BROKER_POOL_LIMIT = 1  # for now on free cloudamqp tier (heroku) (can increase later if needed)
+
 # CORS
 # TODO(BRANDON) Fix for dev/stage/prod
 CORS_ORIGIN_WHITELIST = [

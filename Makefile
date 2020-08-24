@@ -42,7 +42,7 @@ up:
 # run deps (like db and redis)
 deps-up:
 	$(call header,"Starting deps")
-	docker-compose up db redis
+	docker-compose up db redis collab_backend_worker
 
 # Start the development server
 start:
