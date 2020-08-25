@@ -14,6 +14,7 @@ from collab_app.mixins.api import (
 )
 from collab_app.models import (
     Comment,
+    Membership,
     Organization,
     Profile,
     Thread,
@@ -24,6 +25,7 @@ from collab_app.permissions import (
 )
 from collab_app.serializers import (
     CommentSerializer,
+    MembershipSerializer,
     OrganizationSerializer,
     ProfileSerializer,
     ThreadSerializer,
@@ -39,6 +41,13 @@ class CommentViewSet(NoDeleteMixin, ApiViewSet):
     model = Comment
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    permission_classes = (IsAuthenticated, )
+
+
+class MembershipViewSet(ReadOnlyMixin, ApiViewSet):
+    model = Membership
+    queryset = Membership.objects.all()
+    serializer_class = MembershipSerializer
     permission_classes = (IsAuthenticated, )
 
 

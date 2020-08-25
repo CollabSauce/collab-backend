@@ -68,10 +68,3 @@ class User(AbstractUser):
     objects = UserManager()
 
     # custom user fields
-    organization = models.ForeignKey(
-        'collab_app.Organization',
-        null=True,
-        blank=True,
-        related_name="users",
-        on_delete=models.SET_NULL
-    )

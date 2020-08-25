@@ -15,7 +15,7 @@ class Thread(BaseModel):
 
     target_id = models.TextField(blank=True)
     target_dom_path = models.TextField(blank=True)
-    is_resolves = models.BooleanField(default=False)
+    is_resolved = models.BooleanField(default=False)
 
     class Meta:
         constraints = [

@@ -1,8 +1,9 @@
-# from django.db.models import Q
+from django.db.models import Q
 
 from collab_app.models import (
     Comment,
     Organization,
+    Membership,
     Profile,
     Thread,
     User,
@@ -25,17 +26,27 @@ class BaseObjectPermission(object):
 
 class CommentPermission(BaseObjectPermission):
     def read(self, queryset, user):
-        return queryset.filter(thread__organization__users=user)
+        return queryset.filter(thread__organization__memberships__user=user)
 
     def update(self, queryset, user):
-        return queryset.filter(thread__organization__users=user)
+        return queryset.filter(creator=user)
+
+
+class MembershipPermission(BaseObjectPermission):
+    def read(self, queryset, user):
+        return queryset.filter(organization__memberships__user=user)
 
 
 class OrganizationPermission(BaseObjectPermission):
     def read(self, queryset, user):
-        # can read organization if user belongs to that org
-        return queryset.filter(users=user)
+        return queryset.filter(memberships__user=user)
 
+    def update(self, queryset, user):
+        # you can update an org if you are the admin of the org
+        return queryset.filter(
+            Q(memberships__is_admin=True) &
+            Q(memberships__user=user)
+        )
 
 class ProfilePermission(BaseObjectPermission):
     def read(self, queryset, user):
@@ -49,10 +60,10 @@ class ProfilePermission(BaseObjectPermission):
 
 class ThreadPermission(BaseObjectPermission):
     def read(self, queryset, user):
-        return queryset.filter(organization__users=user)
+        return queryset.filter(organization__memberships__user=user)
 
     def update(self, queryset, user):
-        return queryset.filter(organization__users=user)
+        return queryset.filter(organization__memberships__users=user)
 
 class UserPermission(BaseObjectPermission):
     def read(self, queryset, user):
@@ -67,6 +78,7 @@ class UserPermission(BaseObjectPermission):
 class BaseQuerySetPermission(object):
     object_perm_mapping = {
         Comment: CommentPermission(),
+        Membership: MembershipPermission(),
         Organization: OrganizationPermission(),
         Profile: ProfilePermission(),
         Thread: ThreadPermission(),
