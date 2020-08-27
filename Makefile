@@ -39,10 +39,15 @@ up:
 	$(call header,"Starting every service")
 	docker-compose up
 
-# run deps (like db and redis)
+# run deps (like db, redis, etc..)
 deps-up:
 	$(call header,"Starting deps")
 	docker-compose up db redis collab_backend_worker
+
+# run db only
+db-up:
+	$(call header,"Starting db")
+	docker-compose up db
 
 # Start the development server
 start:

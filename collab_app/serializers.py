@@ -9,6 +9,7 @@ from dynamic_rest.fields import (
 
 from collab_app.models import (
     Comment,
+    Invite,
     Membership,
     Organization,
     Profile,
@@ -44,6 +45,28 @@ class CommentSerializer(ApiSerializer):
     thread = DynamicRelationField('ThreadSerializer')
 
 
+class InviteSerializer(ApiSerializer):
+
+    class Meta:
+        model = Invite
+        name = 'invite'
+        fields = (
+            'id',
+            'inviter',
+            'organization',
+            'email',
+            'state',
+            'key'
+        )
+        deferred_fields = (
+            'inviter',
+            'organization',
+        )
+
+    inviter = DynamicRelationField('UserSerializer')
+    organization = DynamicRelationField('OrganizationSerializer')
+
+
 class MembershipSerializer(ApiSerializer):
 
     class Meta:
@@ -71,15 +94,18 @@ class OrganizationSerializer(ApiSerializer):
         name = 'organization'
         fields = (
             'id',
+            'invites',
             'name',
             'threads',
             'memberships',
         )
         deferred_fields = (
+            'invites',
             'threads',
             'memberships',
         )
 
+    invites = DynamicRelationField('InviteSerializer', many=True)
     memberships = DynamicRelationField('UserSerializer', many=True)
     threads = DynamicRelationField('ThreadSerializer', many=True)
 
@@ -131,6 +157,7 @@ class UserSerializer(ApiSerializer):
             'email_verified',
             'email',
             'id',
+            'invites_sent',
             'is_active',
             'is_staff',
             'is_superuser',
@@ -142,12 +169,14 @@ class UserSerializer(ApiSerializer):
         )
         deferred_fields = (
             'email_verified',
+            'invites_sent',
             'memberships',
             'profile',
             'comments',
         )
 
     email_verified = DynamicMethodField()
+    invites_sent = DynamicRelationField('InviteSerializer', many=True)
     memberships = DynamicRelationField('MembershipSerializer', many=True)
     profile = DynamicRelationField('ProfileSerializer')
     comments = DynamicRelationField('CommentSerializer', many=True)

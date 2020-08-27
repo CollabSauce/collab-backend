@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db import models
 from django.db.models import Q
 
@@ -25,8 +24,5 @@ class Thread(BaseModel):
             )
         ]
 
-
     def __str__(self):
         return self.bodytext
-
-

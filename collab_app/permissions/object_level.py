@@ -2,6 +2,7 @@ from django.db.models import Q
 
 from collab_app.models import (
     Comment,
+    Invite,
     Organization,
     Membership,
     Profile,
@@ -32,6 +33,11 @@ class CommentPermission(BaseObjectPermission):
         return queryset.filter(creator=user)
 
 
+class InvitePermission(BaseObjectPermission):
+    def read(self, queryset, user):
+        return queryset.filter(organization__memberships__user=user)
+
+
 class MembershipPermission(BaseObjectPermission):
     def read(self, queryset, user):
         return queryset.filter(organization__memberships__user=user)
@@ -47,6 +53,7 @@ class OrganizationPermission(BaseObjectPermission):
             Q(memberships__is_admin=True) &
             Q(memberships__user=user)
         )
+
 
 class ProfilePermission(BaseObjectPermission):
     def read(self, queryset, user):
@@ -65,6 +72,7 @@ class ThreadPermission(BaseObjectPermission):
     def update(self, queryset, user):
         return queryset.filter(organization__memberships__users=user)
 
+
 class UserPermission(BaseObjectPermission):
     def read(self, queryset, user):
         # can read your own user,
@@ -78,6 +86,7 @@ class UserPermission(BaseObjectPermission):
 class BaseQuerySetPermission(object):
     object_perm_mapping = {
         Comment: CommentPermission(),
+        Invite: InvitePermission(),
         Membership: MembershipPermission(),
         Organization: OrganizationPermission(),
         Profile: ProfilePermission(),

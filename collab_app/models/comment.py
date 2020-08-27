@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db import models
 
 from collab_app.mixins.models import BaseModel
@@ -15,5 +14,3 @@ class Comment(BaseModel):
 
     def __str__(self):
         return self.bodytext
-
-

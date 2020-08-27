@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     # 3rd party apps
     'allauth',  # for dj-rest-auth registration
     'allauth.account',  # for dj-rest-auth registration
-    'allauth.socialaccount',  # required if we want to delete users https://github.com/pennersr/django-allauth/issues/1975#issuecomment-384075169
+    # required if we want to delete users https://github.com/pennersr/django-allauth/issues/1975#issuecomment-384075169
+    'allauth.socialaccount',
     'corsheaders',
     'dynamic_rest',
     'rest_framework',
@@ -203,5 +204,5 @@ CORS_ORIGIN_WHITELIST = [
     "http://127.0.0.1:3000"
 ]
 CORS_ALLOW_HEADERS = list(default_headers) + [
-    'custom-resource', # for js-data on frontend :/
+    'custom-resource',  # for js-data on frontend :/
 ]
