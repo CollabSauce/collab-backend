@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - name: Link
+      - name: Lint
         run: docker-compose run --rm collab_backend_web flake8
       - name: Test
         run: docker-compose run --rm collab_backend_web pytest --ds=tests.settings -s tests/$(TEST)
