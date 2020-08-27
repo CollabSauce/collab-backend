@@ -1,0 +1,14 @@
+name: Docker Compose Actions Workflow
+on:
+  push:
+    branches:
+      - master
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+      - name: Test
+        run: make test
