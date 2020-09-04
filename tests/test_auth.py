@@ -50,7 +50,9 @@ class SignupTestCase(APITestCase):
         data = {
             'password1': 'hungryhippo',
             'password2': 'hungryhippo',
-            'email': 'first@last.com'
+            'email': 'first@last.com',
+            'first_name': 'Hungry',
+            'last_name': 'Hippo',
         }
         # first create/register user
         response = self.client.post('/rest-auth/registration/', data)
@@ -65,7 +67,7 @@ class SignupTestCase(APITestCase):
         self.assertEqual(mail.outbox[0].subject, 'Welcome to example.com!')
         self.assertTrue('Hello from example.com!' in mail.outbox[0].body)
         self.assertTrue(
-            'You\'re receiving this e-mail because user first signed up for example.com' in mail.outbox[0].body
+            'You\'re receiving this e-mail because user hungry signed up for example.com' in mail.outbox[0].body
         )
 
         # now try logging in - test to make sure username and
