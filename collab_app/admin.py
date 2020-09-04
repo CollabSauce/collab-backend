@@ -3,17 +3,29 @@ from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.utils.translation import ugettext_lazy as _
 
 from collab_app.models import (
-    Comment,
+    Invite,
+    Membership,
     Organization,
     Profile,
+    Project,
+    Task,
+    TaskColumn,
+    TaskComment,
+    TaskMetadata,
     User,
 )
 
 
 @admin.register(
-    Comment,
+    Invite,
+    Membership,
     Organization,
     Profile,
+    Project,
+    Task,
+    TaskColumn,
+    TaskComment,
+    TaskMetadata,
 )
 class DefaultAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)

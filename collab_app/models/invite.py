@@ -13,12 +13,12 @@ class Invite(BaseModel):
     inviter = models.ForeignKey(
         'collab_app.User',
         related_name='invites_sent',
-        on_delete=models.CASCADE
+        on_delete=models.PROTECT
     )
     organization = models.ForeignKey(
         'collab_app.Organization',
         related_name='invites',
-        on_delete=models.CASCADE
+        on_delete=models.PROTECT
     )
 
     email = models.EmailField(unique=True)

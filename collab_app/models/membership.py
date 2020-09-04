@@ -7,12 +7,12 @@ class Membership(BaseModel):
     organization = models.ForeignKey(
         'collab_app.Organization',
         related_name='memberships',
-        on_delete=models.CASCADE
+        on_delete=models.PROTECT
     )
     user = models.ForeignKey(
         'collab_app.User',
         related_name='memberships',
-        on_delete=models.CASCADE
+        on_delete=models.PROTECT
     )
 
     is_admin = models.BooleanField(default=False)

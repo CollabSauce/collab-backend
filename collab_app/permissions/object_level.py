@@ -1,12 +1,15 @@
 from django.db.models import Q
 
 from collab_app.models import (
-    Comment,
     Invite,
     Organization,
     Membership,
     Profile,
-    Thread,
+    Project,
+    Task,
+    TaskColumn,
+    TaskMetadata,
+    TaskComment,
     User,
 )
 
@@ -23,14 +26,6 @@ class BaseObjectPermission(object):
 
     def update(self, queryset, user):
         return queryset
-
-
-class CommentPermission(BaseObjectPermission):
-    def read(self, queryset, user):
-        return queryset.filter(thread__organization__memberships__user=user)
-
-    def update(self, queryset, user):
-        return queryset.filter(creator=user)
 
 
 class InvitePermission(BaseObjectPermission):
@@ -65,12 +60,36 @@ class ProfilePermission(BaseObjectPermission):
         return queryset.filter(user=user)
 
 
-class ThreadPermission(BaseObjectPermission):
+class ProjectPermission(BaseObjectPermission):
     def read(self, queryset, user):
         return queryset.filter(organization__memberships__user=user)
 
     def update(self, queryset, user):
-        return queryset.filter(organization__memberships__users=user)
+        return queryset.filter(organization__memberships__user=user)
+
+
+class TaskPermission(BaseObjectPermission):
+    def read(self, queryset, user):
+        return queryset.filter(project__organization__memberships__user=user)
+
+    def update(self, queryset, user):
+        return queryset.filter(creator=user)
+
+
+class TaskMetadataPermission(BaseObjectPermission):
+    def read(self, queryset, user):
+        return queryset.filter(task__project__organization__memberships__user=user)
+
+    def update(self, queryset, user):
+        return queryset.filter(task__creator=user) # remove permission?
+
+
+class TaskCommentPermission(BaseObjectPermission):
+    def read(self, queryset, user):
+        return queryset.filter(task__project__organization__memberships__user=user)
+
+    def update(self, queryset, user):
+        return queryset.filter(creator=user) # remove permission?
 
 
 class UserPermission(BaseObjectPermission):
@@ -85,12 +104,14 @@ class UserPermission(BaseObjectPermission):
 
 class BaseQuerySetPermission(object):
     object_perm_mapping = {
-        Comment: CommentPermission(),
         Invite: InvitePermission(),
         Membership: MembershipPermission(),
         Organization: OrganizationPermission(),
         Profile: ProfilePermission(),
-        Thread: ThreadPermission(),
+        Task: TaskPermission(),
+        TaskMetadata: TaskMetadataPermission(),
+        TaskComment: TaskCommentPermission(),
+        Profile: ProfilePermission(),
         User: UserPermission(),
     }
 

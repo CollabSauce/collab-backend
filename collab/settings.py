@@ -174,6 +174,11 @@ REST_AUTH_SERIALIZERS = {
     'PASSWORD_RESET_SERIALIZER': 'collab_app.auth.serializers.PasswordResetSerializer',
 }
 
+# for django-rest-auth custom serializers (for saving first and last name on signup)
+REST_AUTH_REGISTER_SERIALIZERS = {
+    'REGISTER_SERIALIZER': 'collab_app.auth.serializers.RegisterSerializer',
+}
+
 # Extra Django Rest Framework settings.
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

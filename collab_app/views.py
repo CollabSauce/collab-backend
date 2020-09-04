@@ -14,37 +14,36 @@ from collab_app.mixins.api import (
     AddCreatorMixin,
 )
 from collab_app.models import (
-    Comment,
     Invite,
     Membership,
     Organization,
     Profile,
-    Thread,
+    Project,
+    Task,
+    TaskColumn,
+    TaskComment,
+    TaskMetadata,
     User,
 )
 from collab_app.permissions import (
     GateKeeper,
 )
 from collab_app.serializers import (
-    CommentSerializer,
     InviteSerializer,
     MembershipSerializer,
     OrganizationSerializer,
     ProfileSerializer,
-    ThreadSerializer,
+    ProjectSerializer,
+    TaskSerializer,
+    TaskColumnSerializer,
+    TaskCommentSerializer,
+    TaskMetadataSerializer,
     UserSerializer,
 )
 
 
 class ApiViewSet(GateKeeper, AddCreatorMixin, SaveMixin, DynamicModelViewSet):
     pass
-
-
-class CommentViewSet(NoDeleteMixin, ApiViewSet):
-    model = Comment
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
-    permission_classes = (IsAuthenticated, )
 
 
 class InviteViewSet(ReadOnlyMixin, ApiViewSet):
@@ -126,7 +125,7 @@ class MembershipViewSet(ReadOnlyMixin, ApiViewSet):
     permission_classes = (IsAuthenticated, )
 
 
-class OrganizationViewSet(NoDeleteMixin, ApiViewSet):
+class OrganizationViewSet(ReadOnlyMixin, ApiViewSet):
     model = Organization
     queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
@@ -140,10 +139,38 @@ class ProfileViewSet(ReadOnlyMixin, ApiViewSet):
     permission_classes = (IsAuthenticated, )
 
 
-class ThreadViewSet(NoDeleteMixin, ApiViewSet):
-    model = Thread
-    queryset = Thread.objects.all()
-    serializer_class = ThreadSerializer
+class ProjectViewSet(ReadOnlyMixin, ApiViewSet):
+    model = Project
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    permission_classes = (IsAuthenticated, )
+
+
+class TaskViewSet(ReadOnlyMixin, ApiViewSet):
+    model = Task
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+    permission_classes = (IsAuthenticated, )
+
+
+class TaskColumnViewSet(ReadOnlyMixin, ApiViewSet):
+    model = TaskColumn
+    queryset = TaskColumn.objects.all()
+    serializer_class = TaskColumnSerializer
+    permission_classes = (IsAuthenticated, )
+
+
+class TaskCommentViewSet(ReadOnlyMixin, ApiViewSet):
+    model = TaskComment
+    queryset = TaskComment.objects.all()
+    serializer_class = TaskCommentSerializer
+    permission_classes = (IsAuthenticated, )
+
+
+class TaskMetadataViewSet(ReadOnlyMixin, ApiViewSet):
+    model = TaskMetadata
+    queryset = TaskMetadata.objects.all()
+    serializer_class = TaskMetadataSerializer
     permission_classes = (IsAuthenticated, )
 
 

@@ -8,12 +8,15 @@ from dynamic_rest.fields import (
 )
 
 from collab_app.models import (
-    Comment,
     Invite,
     Membership,
     Organization,
     Profile,
-    Thread,
+    Project,
+    Task,
+    TaskColumn,
+    TaskComment,
+    TaskMetadata,
     User,
 )
 from collab_app.permissions import (
@@ -25,24 +28,24 @@ class ApiSerializer(SideGateKeeper, DynamicModelSerializer):
     pass
 
 
-class CommentSerializer(ApiSerializer):
+# class CommentSerializer(ApiSerializer):
 
-    class Meta:
-        model = Comment
-        name = 'comment'
-        fields = (
-            'id',
-            'bodytext',
-            'creator',
-            'thread',
-        )
-        deferred_fields = (
-            'creator',
-            'thread',
-        )
+#     class Meta:
+#         model = Comment
+#         name = 'comment'
+#         fields = (
+#             'id',
+#             'bodytext',
+#             'creator',
+#             'thread',
+#         )
+#         deferred_fields = (
+#             'creator',
+#             'thread',
+#         )
 
-    creator = DynamicRelationField('UserSerializer')
-    thread = DynamicRelationField('ThreadSerializer')
+#     creator = DynamicRelationField('UserSerializer')
+#     thread = DynamicRelationField('ThreadSerializer')
 
 
 class InviteSerializer(ApiSerializer):
@@ -96,18 +99,18 @@ class OrganizationSerializer(ApiSerializer):
             'id',
             'invites',
             'name',
-            'threads',
             'memberships',
+            'projects',
         )
         deferred_fields = (
             'invites',
-            'threads',
             'memberships',
+            'projects',
         )
 
     invites = DynamicRelationField('InviteSerializer', many=True)
     memberships = DynamicRelationField('UserSerializer', many=True)
-    threads = DynamicRelationField('ThreadSerializer', many=True)
+    projects = DynamicRelationField('ProjectSerializer', many=True)
 
 
 class ProfileSerializer(ApiSerializer):
@@ -126,26 +129,115 @@ class ProfileSerializer(ApiSerializer):
     user = DynamicRelationField('UserSerializer')
 
 
-class ThreadSerializer(ApiSerializer):
+class ProjectSerializer(ApiSerializer):
 
     class Meta:
-        model = Thread
-        name = 'thread'
+        model = Project
+        name = 'project'
         fields = (
             'id',
-            'comments',
-            'is_resolved',
+            'name',
+            'key',
+            'url',
             'organization',
-            'target_id',
-            'target_dom_path',
         )
         deferred_fields = (
-            'comments',
-            'organization'
+            'organization',
         )
 
     organization = DynamicRelationField('OrganizationSerializer')
-    comments = DynamicRelationField('CommentSerializer', many=True)
+
+
+class TaskSerializer(ApiSerializer):
+
+    class Meta:
+        model = Task
+        name = 'task'
+        fields = (
+            'id',
+            'comment',
+            'design_edits',
+            'screenshot_url',
+            'task_number',
+            'is_resolved',
+            'target_id',
+            'target_dom_path',
+            'creator',
+            'project',
+            'task_column',
+            'task_comments',
+            'task_metadata',
+        )
+        deferred_fields = (
+            'creator',
+            'project',
+            'task_column',
+            'task_comments',
+            'task_metadata',
+        )
+
+    creator = DynamicRelationField('UserSerializer')
+    project = DynamicRelationField('ProjectSerializer')
+    task_column = DynamicRelationField('TaskColumnSerializer')
+    task_comments = DynamicRelationField('TaskCommentSerializer', many=True)
+    task_metadata = DynamicRelationField('TaskMetadataSerializer')
+
+
+class TaskCommentSerializer(ApiSerializer):
+    class Meta:
+        model = TaskComment
+        name = 'task_comment'
+        fields = (
+            'id',
+            'creator',
+            'task',
+            'text',
+        )
+        deferred_fields = (
+            'creator',
+            'task',
+        )
+
+    creator = DynamicRelationField('UserSerializer')
+    task = DynamicRelationField('TaskSerializer')
+
+
+class TaskColumnSerializer(ApiSerializer):
+    class Meta:
+        model = TaskColumn
+        name = 'task_column'
+        fields = (
+            'id',
+            'name',
+            'tasks',
+        )
+        deferred_fields = (
+            'tasks',
+        )
+
+    tasks = DynamicRelationField('TaskSerializer', many=True)
+
+
+class TaskMetadataSerializer(ApiSerializer):
+    class Meta:
+        model = TaskMetadata
+        name = 'task_metadata'
+        fields = (
+            'id',
+            'task_logged_at',
+            'operating_system',
+            'browser',
+            'selector',
+            'resolution',
+            'browser_window',
+            'color_depth',
+            'task'
+        )
+        deferred_fields = (
+            'task',
+        )
+
+    task = DynamicRelationField('TaskSerializer')
 
 
 class UserSerializer(ApiSerializer):
@@ -165,21 +257,24 @@ class UserSerializer(ApiSerializer):
             'last_name',
             'memberships',
             'profile',
-            'comments',
+            'created_tasks',
+            'created_task_comments',
         )
         deferred_fields = (
             'email_verified',
             'invites_sent',
             'memberships',
             'profile',
-            'comments',
+            'created_tasks',
+            'created_task_comments',
         )
 
     email_verified = DynamicMethodField()
     invites_sent = DynamicRelationField('InviteSerializer', many=True)
     memberships = DynamicRelationField('MembershipSerializer', many=True)
     profile = DynamicRelationField('ProfileSerializer')
-    comments = DynamicRelationField('CommentSerializer', many=True)
+    created_tasks = DynamicRelationField('TaskSerializer', many=True)
+    created_task_comments = DynamicRelationField('TaskCommentSerializer', many=True)
 
     def get_email_verified(self, user):
         return EmailAddress.objects.filter(user=user, verified=True).exists()
