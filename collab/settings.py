@@ -211,3 +211,10 @@ CORS_ORIGIN_WHITELIST = [
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'custom-resource',  # for js-data on frontend :/
 ]
+
+# For s3 (boto3 automatically checks ENV Vars for AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)
+# all we have to set is the S3_BUCKET name
+S3_BUCKET = os.environ.get(
+    'S3_BUCKET',
+    'coachtemp'
+)

@@ -1,4 +1,8 @@
+from datetime import datetime
+
 from allauth.account.models import EmailAddress
+import boto3
+from django.conf import settings
 from dynamic_rest.viewsets import DynamicModelViewSet
 from rest_framework.decorators import action
 from rest_framework import exceptions
@@ -151,6 +155,35 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = (IsAuthenticated, )
+
+    @action(detail=False, methods=['get'])
+    def signature(self, request, *args, **kwargs):
+        s3_bucket = getattr(settings, 'S3_BUCKET')
+        organization = request.query_params.get('organization', None)
+
+        if not organization:
+            raise exceptions.ValidationError(
+                'Must provide organization query-param'
+            )
+
+        file_name = f'{organization}__{datetime.now().isoformat()}.png'
+        s3 = boto3.client('s3')
+
+        presigned_post = s3.generate_presigned_post(
+            s3_bucket,
+            file_name,
+            Fields={'acl': 'public-read', 'Content-Type': 'png'},
+            Conditions=[
+                {'acl': 'public-read'},
+                {'Content-Type': file_type}
+            ],
+            ExpiresIn=120
+        )
+
+        return Response({
+          'data': presigned_post,
+          'url': f'https://{s3_bucket}.s3.amazonaws.com/{file_name}'
+        })
 
 
 class TaskColumnViewSet(ReadOnlyMixin, ApiViewSet):
