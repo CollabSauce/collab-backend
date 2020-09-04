@@ -7,7 +7,6 @@ from collab_app.models import (
     Profile,
     Project,
     Task,
-    TaskColumn,
     TaskMetadata,
     TaskComment,
     User,
@@ -81,7 +80,7 @@ class TaskMetadataPermission(BaseObjectPermission):
         return queryset.filter(task__project__organization__memberships__user=user)
 
     def update(self, queryset, user):
-        return queryset.filter(task__creator=user) # remove permission?
+        return queryset.filter(task__creator=user)  # remove permission?
 
 
 class TaskCommentPermission(BaseObjectPermission):
@@ -89,7 +88,7 @@ class TaskCommentPermission(BaseObjectPermission):
         return queryset.filter(task__project__organization__memberships__user=user)
 
     def update(self, queryset, user):
-        return queryset.filter(creator=user) # remove permission?
+        return queryset.filter(creator=user)  # remove permission?
 
 
 class UserPermission(BaseObjectPermission):
@@ -108,10 +107,10 @@ class BaseQuerySetPermission(object):
         Membership: MembershipPermission(),
         Organization: OrganizationPermission(),
         Profile: ProfilePermission(),
+        Project: ProjectPermission(),
         Task: TaskPermission(),
         TaskMetadata: TaskMetadataPermission(),
         TaskComment: TaskCommentPermission(),
-        Profile: ProfilePermission(),
         User: UserPermission(),
     }
 

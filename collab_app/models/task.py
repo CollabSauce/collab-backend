@@ -20,7 +20,7 @@ class Task(BaseModel):
     )
 
     task_column = models.ForeignKey(
-        'collab_app.TaskColumn'    ,
+        'collab_app.TaskColumn',
         related_name='tasks',
         on_delete=models.PROTECT
     )
@@ -30,7 +30,6 @@ class Task(BaseModel):
         related_name='created_tasks',
         on_delete=models.PROTECT
     )
-
 
     class Meta:
         constraints = [

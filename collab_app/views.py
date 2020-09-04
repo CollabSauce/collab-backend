@@ -13,7 +13,6 @@ from rest_framework.response import Response
 
 from collab_app.mixins.api import (
     ReadOnlyMixin,
-    NoDeleteMixin,
     SaveMixin,
     AddCreatorMixin,
 )
@@ -160,19 +159,20 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
     def signature(self, request, *args, **kwargs):
         s3_bucket = getattr(settings, 'S3_BUCKET')
         organization = request.query_params.get('organization', None)
+        file_type = 'png'  # TODO: other img file-types?
 
         if not organization:
             raise exceptions.ValidationError(
                 'Must provide organization query-param'
             )
 
-        file_name = f'{organization}__{datetime.now().isoformat()}.png'
+        file_name = f'{organization}__{datetime.now().isoformat()}.{file_type}'
         s3 = boto3.client('s3')
 
         presigned_post = s3.generate_presigned_post(
             s3_bucket,
             file_name,
-            Fields={'acl': 'public-read', 'Content-Type': 'png'},
+            Fields={'acl': 'public-read', 'Content-Type': file_type},
             Conditions=[
                 {'acl': 'public-read'},
                 {'Content-Type': file_type}
