@@ -35,7 +35,6 @@ def catch_failures(func):
     return wrapper
 
 
-# UNUSED?
 def generate_email(subject, html_body, from_email, to_email, text_body='', cc=[], bcc=[], headers=None):
     # attempt converting HTML (template) into text for fallback
     if html_body and not text_body:
@@ -52,7 +51,6 @@ def generate_email(subject, html_body, from_email, to_email, text_body='', cc=[]
     return email
 
 
-# UNUSED?
 def send_email(
     subject, html_body, from_email, to_email, text_body='', cc=[], bcc=[], headers=None, fail_silently=False
 ):

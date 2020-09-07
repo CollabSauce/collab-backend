@@ -69,14 +69,25 @@ class InviteViewSet(ReadOnlyMixin, ApiViewSet):
         # make sure inviter is an admin of the org
         if not organization.memberships.filter(user=inviter, is_admin=True).exists():
             raise exceptions.ValidationError('You must be an admin of this organization to send invites.')
+        if Invite.objects.filter(email=email).exists():
+            # 1) We have db validation on this, but do manual validation for better exception message to user
+            # 2) TODO: Update when multiple orgs.
+            raise exceptions.ValidationError('This email has already been invited to Collabsauce.')
 
         invite = Invite.objects.create(
             email=email,
             organization=organization,
             inviter=inviter,
-            state=state
+            state=state,
+            key=get_random_string(length=32)
         )
-        return Response(InviteSerializer(invite).data, status=201)
+        return Response({
+            'invite': InviteSerializer(
+                invite,
+                include_fields=InviteSerializer.Meta.deferred_fields).data
+            },
+            status=201
+        )
 
     @action(detail=False, methods=['post'])
     def accept_invite(self, request, *args, **kwargs):
@@ -91,7 +102,13 @@ class InviteViewSet(ReadOnlyMixin, ApiViewSet):
         invite.state = Invite.InviteState.ACCEPTED
         invite.save()
 
-        return Response(InviteSerializer(invite).data, status=200)
+        return Response({
+            'invite': InviteSerializer(
+                invite,
+                include_fields=InviteSerializer.Meta.deferred_fields).data
+            },
+            status=200
+        )
 
     @action(detail=False, methods=['post'])
     def deny_invite(self, request, *args, **kwargs):
@@ -106,7 +123,13 @@ class InviteViewSet(ReadOnlyMixin, ApiViewSet):
         invite.state = Invite.InviteState.DENIED
         invite.save()
 
-        return Response(InviteSerializer(invite).data, status=200)
+        return Response({
+            'invite': InviteSerializer(
+                invite,
+                include_fields=InviteSerializer.Meta.deferred_fields).data
+            },
+            status=200
+        )
 
     @action(detail=False, methods=['post'])
     def cancel_invite(self, request, *args, **kwargs):
@@ -121,7 +144,13 @@ class InviteViewSet(ReadOnlyMixin, ApiViewSet):
         invite.state = Invite.InviteState.CANCELED
         invite.save()
 
-        return Response(InviteSerializer(invite).data, status=200)
+        return Response({
+            'invite': InviteSerializer(
+                invite,
+                include_fields=InviteSerializer.Meta.deferred_fields).data
+            },
+            status=200
+        )
 
 
 class MembershipViewSet(ReadOnlyMixin, ApiViewSet):

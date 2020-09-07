@@ -82,7 +82,9 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            BASE_DIR + '/templates/', BASE_DIR + '/collab_app/auth/templates/'
+            BASE_DIR + '/templates/',
+            BASE_DIR + '/collab_app/auth/templates/',
+            BASE_DIR + '/collab_app/templates/',
         ],
         'APP_DIRS': True,
         'OPTIONS': {

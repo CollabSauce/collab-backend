@@ -23,7 +23,7 @@ class Invite(BaseModel):
 
     email = models.EmailField(unique=True)
     state = models.PositiveSmallIntegerField(choices=InviteState.choices, default=InviteState.CREATED)
-    key = models.CharField(max_length=64, unique=True, null=True, blank=True)
+    key = models.CharField(max_length=64, unique=True, default='')
 
     class Meta:
         constraints = [

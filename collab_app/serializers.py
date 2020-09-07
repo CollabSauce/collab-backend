@@ -39,7 +39,6 @@ class InviteSerializer(ApiSerializer):
             'organization',
             'email',
             'state',
-            'key'
         )
         deferred_fields = (
             'inviter',
