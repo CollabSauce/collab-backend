@@ -25,13 +25,13 @@ class InvitePermissionTestCase(BaseApiSetUp):
         self.organization2 = mommy.make(Organization)
         self.organization3 = mommy.make(Organization)
 
-        self.m1 = mommy.make(Membership, is_admin=True, user=self.user, organization=self.organization1)
-        self.m2 = mommy.make(Membership, is_admin=False, user=self.other_user, organization=self.organization2)
-        self.m3 = mommy.make(Membership, is_admin=False, user=self.user, organization=self.organization3)
+        self.m1 = mommy.make(Membership, role=Membership.RoleType.ADMIN, user=self.user, organization=self.organization1)
+        self.m2 = mommy.make(Membership, role=Membership.RoleType.DASHBOARD, user=self.other_user, organization=self.organization2)
+        self.m3 = mommy.make(Membership, role=Membership.RoleType.DASHBOARD, user=self.user, organization=self.organization3)
 
-        self.i1 = mommy.make(Invite, organization=self.organization1, email='hi@hi.com')
-        self.i2 = mommy.make(Invite, organization=self.organization2)
-        self.i3 = mommy.make(Invite, organization=self.organization3)
+        self.i1 = mommy.make(Invite, organization=self.organization1, email='hi@hi.com', key='abd')
+        self.i2 = mommy.make(Invite, organization=self.organization2, key='aad')
+        self.i3 = mommy.make(Invite, organization=self.organization3, key='arbd')
 
     def test_can_view_invites_if_member_of_org(self):
         response = self.client.get('/api/invites')
@@ -51,8 +51,8 @@ class InvitePermissionTestCase(BaseApiSetUp):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(content[0], 'You must be an admin of this organization to send invites.')
 
-        # change to is_admin=True and it should work
-        self.m3.is_admin = True
+        # change user to admin role and it should work
+        self.m3.role = Membership.RoleType.ADMIN
         self.m3.save()
         response = self.client.post('/api/invites/create_invite', data)
         self.assertEqual(response.status_code, 201)
@@ -96,8 +96,8 @@ class InvitePermissionTestCase(BaseApiSetUp):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(content[0], 'You must be an admin of this organization to cancel invites.')
 
-        # change to is_admin=True and it should work
-        self.m3.is_admin = True
+        # change user to admin role and it should work
+        self.m3.role = Membership.RoleType.ADMIN
         self.m3.save()
 
         response = self.client.post('/api/invites/cancel_invite/', data)

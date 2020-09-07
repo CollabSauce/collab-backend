@@ -44,7 +44,7 @@ class OrganizationPermission(BaseObjectPermission):
     def update(self, queryset, user):
         # you can update an org if you are the admin of the org
         return queryset.filter(
-            Q(memberships__is_admin=True) &
+            Q(memberships__role=Membership.RoleType.ADMIN) &
             Q(memberships__user=user)
         )
 
@@ -93,8 +93,11 @@ class TaskCommentPermission(BaseObjectPermission):
 
 class UserPermission(BaseObjectPermission):
     def read(self, queryset, user):
-        # can read your own user,
-        return queryset.filter(id=user.id)
+        # can read your own user, or other users of the orgs you belong to
+        return queryset.filter(
+            Q(id=user.id) |
+            Q(memberships__organization__memberships__user=user)
+        )
 
     def update(self, queryset, user):
         # can only update your own user

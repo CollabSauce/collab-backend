@@ -14,6 +14,7 @@ from rest_framework.response import Response
 
 from collab_app.mixins.api import (
     ReadOnlyMixin,
+    NoCreateMixin,
     NoUpdateMixin,
     NoDeleteMixin,
     SaveMixin,
@@ -67,11 +68,11 @@ class InviteViewSet(ReadOnlyMixin, ApiViewSet):
         state = Invite.InviteState.CREATED
 
         # make sure inviter is an admin of the org
-        if not organization.memberships.filter(user=inviter, is_admin=True).exists():
+        if not organization.memberships.filter(user=inviter, role=Membership.RoleType.ADMIN).exists():
             raise exceptions.ValidationError('You must be an admin of this organization to send invites.')
-        if Invite.objects.filter(email=email).exists():
+        if Invite.objects.filter(email=email, organization=organization, state=Invite.InviteState.CREATED).exists():
             # 1) We have db validation on this, but do manual validation for better exception message to user
-            # 2) TODO: Update when multiple orgs.
+            # 2) TODO: Update when multiple orgs??
             raise exceptions.ValidationError('This email has already been invited to Collabsauce.')
 
         invite = Invite.objects.create(
@@ -145,7 +146,7 @@ class InviteViewSet(ReadOnlyMixin, ApiViewSet):
 
         if invite.state != Invite.InviteState.CREATED:
             raise exceptions.ValidationError('Can no longer cancel this invitation.')
-        if not invite.organization.memberships.filter(user=request.user, is_admin=True).exists():
+        if not invite.organization.memberships.filter(user=request.user, role=Membership.RoleType.ADMIN).exists():
             raise exceptions.ValidationError('You must be an admin of this organization to cancel invites.')
 
         invite.state = Invite.InviteState.CANCELED
@@ -160,11 +161,22 @@ class InviteViewSet(ReadOnlyMixin, ApiViewSet):
         )
 
 
-class MembershipViewSet(ReadOnlyMixin, ApiViewSet):
+class MembershipViewSet(NoCreateMixin, NoUpdateMixin, ApiViewSet):
     model = Membership
     queryset = Membership.objects.all()
     serializer_class = MembershipSerializer
     permission_classes = (IsAuthenticated, )
+
+    def destroy(self, request, *args, **kwargs):
+        membership_to_delete = self.get_object()
+        membership_of_current_user = membership_to_delete.organization.memberships.get(user=request.user)
+
+        if membership_to_delete == membership_of_current_user:
+            raise exceptions.ValidationError('Cannot remove yourself from an organization')
+        if membership_of_current_user.role != Membership.RoleType.ADMIN:
+            raise exceptions.ValidationError('You must be an admin of the org to remove members')
+
+        return super(MembershipViewSet, self).destroy(request, *args, **kwargs)
 
 
 class OrganizationViewSet(NoUpdateMixin, NoDeleteMixin, ApiViewSet):
@@ -186,7 +198,7 @@ class OrganizationViewSet(NoUpdateMixin, NoDeleteMixin, ApiViewSet):
         Membership.objects.create(
             organization_id=response.data['organization']['id'],
             user=request.user,
-            is_admin=True
+            role=Membership.RoleType.ADMIN
         )
         return response
 
@@ -207,7 +219,7 @@ class ProjectViewSet(NoUpdateMixin, NoDeleteMixin, ApiViewSet):
     def create(self, request, *args, **kwargs):
         # For now, user can only belong to one organization (hence one membership). Get that organization.
         membership = Membership.objects.filter(user=request.user).select_related('organization').first()
-        if not membership.is_admin:
+        if membership.role != Membership.RoleType.ADMIN:
             raise exceptions.ValidationError(
                 'You must be an admin to create a project.'
             )

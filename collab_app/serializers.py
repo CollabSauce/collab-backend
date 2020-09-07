@@ -58,7 +58,7 @@ class MembershipSerializer(ApiSerializer):
             'id',
             'organization',
             'user',
-            'is_admin',
+            'role',
         )
         deferred_fields = (
             'user',
