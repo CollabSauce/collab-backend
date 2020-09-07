@@ -6,7 +6,7 @@ from collab_app.mixins.models import BaseModel
 class Project(BaseModel):
     name = models.TextField()
     key = models.CharField(max_length=32, unique=True)
-    url = models.TextField(null=True, blank=True)  # make this a url field? Does it even matter?
+    url = models.TextField(blank=True, default='')  # make this a url field? Does it even matter?
 
     organization = models.ForeignKey(
         'collab_app.Organization',

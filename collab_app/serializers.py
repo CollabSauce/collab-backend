@@ -28,26 +28,6 @@ class ApiSerializer(SideGateKeeper, DynamicModelSerializer):
     pass
 
 
-# class CommentSerializer(ApiSerializer):
-
-#     class Meta:
-#         model = Comment
-#         name = 'comment'
-#         fields = (
-#             'id',
-#             'bodytext',
-#             'creator',
-#             'thread',
-#         )
-#         deferred_fields = (
-#             'creator',
-#             'thread',
-#         )
-
-#     creator = DynamicRelationField('UserSerializer')
-#     thread = DynamicRelationField('ThreadSerializer')
-
-
 class InviteSerializer(ApiSerializer):
 
     class Meta:
@@ -109,7 +89,7 @@ class OrganizationSerializer(ApiSerializer):
         )
 
     invites = DynamicRelationField('InviteSerializer', many=True)
-    memberships = DynamicRelationField('UserSerializer', many=True)
+    memberships = DynamicRelationField('MembershipSerializer', many=True)
     projects = DynamicRelationField('ProjectSerializer', many=True)
 
 
@@ -155,9 +135,10 @@ class TaskSerializer(ApiSerializer):
         name = 'task'
         fields = (
             'id',
-            'comment',
+            'description',
             'design_edits',
-            'screenshot_url',
+            'window_screenshot_url',
+            'element_screenshot_url',
             'task_number',
             'is_resolved',
             'target_id',
@@ -224,7 +205,7 @@ class TaskMetadataSerializer(ApiSerializer):
         name = 'task_metadata'
         fields = (
             'id',
-            'task_logged_at',
+            'url_origin',
             'operating_system',
             'browser',
             'selector',

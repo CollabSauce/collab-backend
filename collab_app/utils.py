@@ -28,7 +28,7 @@ def catch_failures(func):
         try:
             return func(*args, **kwargs)
         except IntegrityError as e:
-            raise exceptions.ValidationError(e.message)
+            raise exceptions.ValidationError(e)
         except DataError as e:
             raise exceptions.ValidationError(e.message)
 

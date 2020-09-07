@@ -3,6 +3,7 @@ from datetime import datetime
 from allauth.account.models import EmailAddress
 import boto3
 from django.conf import settings
+from django.utils.crypto import get_random_string
 from dynamic_rest.viewsets import DynamicModelViewSet
 from rest_framework.decorators import action
 from rest_framework import exceptions
@@ -13,6 +14,8 @@ from rest_framework.response import Response
 
 from collab_app.mixins.api import (
     ReadOnlyMixin,
+    NoUpdateMixin,
+    NoDeleteMixin,
     SaveMixin,
     AddCreatorMixin,
 )
@@ -128,11 +131,28 @@ class MembershipViewSet(ReadOnlyMixin, ApiViewSet):
     permission_classes = (IsAuthenticated, )
 
 
-class OrganizationViewSet(ReadOnlyMixin, ApiViewSet):
+class OrganizationViewSet(NoUpdateMixin, NoDeleteMixin, ApiViewSet):
     model = Organization
     queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
     permission_classes = (IsAuthenticated, )
+
+    def create(self, request, *args, **kwargs):
+        # For now, only allow a user to belong to one organization (even though
+        # we have DB modeling as being able to belong to many orgs).
+        # Verify that the user is not a member in any other organization yet.
+        if Membership.objects.filter(user=request.user).exists():
+            raise exceptions.ValidationError(
+                'You already belong to an organization.'
+            )
+        response = super(OrganizationViewSet, self).create(request, *args, **kwargs)
+        # create a membership for the user after create of org.
+        Membership.objects.create(
+            organization_id=response.data['organization']['id'],
+            user=request.user,
+            is_admin=True
+        )
+        return response
 
 
 class ProfileViewSet(ReadOnlyMixin, ApiViewSet):
@@ -142,11 +162,23 @@ class ProfileViewSet(ReadOnlyMixin, ApiViewSet):
     permission_classes = (IsAuthenticated, )
 
 
-class ProjectViewSet(ReadOnlyMixin, ApiViewSet):
+class ProjectViewSet(NoUpdateMixin, NoDeleteMixin, ApiViewSet):
     model = Project
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = (IsAuthenticated, )
+
+    def create(self, request, *args, **kwargs):
+        # For now, user can only belong to one organization (hence one membership). Get that organization.
+        membership = Membership.objects.filter(user=request.user).select_related('organization').first()
+        if not membership.is_admin:
+            raise exceptions.ValidationError(
+                'You must be an admin to create a project.'
+            )
+
+        request.data['key'] = get_random_string(length=32)
+        request.data['organization'] = membership.organization.id
+        return super(ProjectViewSet, self).create(request, *args, **kwargs)
 
 
 class TaskViewSet(ReadOnlyMixin, ApiViewSet):

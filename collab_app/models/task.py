@@ -5,9 +5,10 @@ from collab_app.mixins.models import BaseModel
 
 
 class Task(BaseModel):
-    comment = models.TextField(blank=True, default='')
+    description = models.TextField(blank=True, default='')
     design_edits = models.TextField(blank=True, default='')
-    screenshot_url = models.TextField(null=True, blank=True)
+    window_screenshot_url = models.TextField(blank=True, default='')
+    element_screenshot_url = models.TextField(blank=True, default='')
     task_number = models.PositiveIntegerField()
     is_resolved = models.BooleanField(default=False)
     target_id = models.TextField(blank=True, default='')
@@ -35,8 +36,8 @@ class Task(BaseModel):
         constraints = [
             models.UniqueConstraint(fields=['task_number', 'project'], name='unique_tasknumber_project'),
             models.CheckConstraint(
-                name="%(app_label)s_%(class)s_comment_or_design_edits",
-                check=(~Q(comment='') | ~Q(design_edits=''))
+                name="%(app_label)s_%(class)s_description_or_design_edits",
+                check=(~Q(description='') | ~Q(design_edits=''))
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_target_id_or_dom_path",
@@ -50,7 +51,7 @@ class TaskColumn(BaseModel):
 
 
 class TaskMetadata(BaseModel):
-    task_logged_at = models.TextField(default='')
+    url_origin = models.TextField(default='')
     operating_system = models.TextField(default='')
     browser = models.TextField(default='')
     selector = models.TextField(default='')
