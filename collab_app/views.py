@@ -91,37 +91,23 @@ class InviteViewSet(ReadOnlyMixin, ApiViewSet):
 
     @action(detail=False, methods=['post'])
     def accept_invite(self, request, *args, **kwargs):
-        invite_id = request.data.get('invite')
-        invite = Invite.objects.get(id=invite_id)
 
+        invite = Invite.objects.get(email=request.user.email)
+        key = request.data.get('key')
+
+        if not request.user.is_authenticated:
+            raise exceptions.ValidationError('You must be logged in to accept an invite.')
         if invite.state != Invite.InviteState.CREATED:
             raise exceptions.ValidationError('Can no longer accept this invitation.')
         if invite.email != request.user.email:
             raise exceptions.ValidationError('This invite does not belong to you.')
+        if invite.key != key:
+            raise exceptions.ValidationError('This invite is not longer valid. Ask your admin to resend an invite.')
 
         invite.state = Invite.InviteState.ACCEPTED
         invite.save()
 
-        return Response({
-            'invite': InviteSerializer(
-                invite,
-                include_fields=InviteSerializer.Meta.deferred_fields).data
-            },
-            status=200
-        )
-
-    @action(detail=False, methods=['post'])
-    def deny_invite(self, request, *args, **kwargs):
-        invite_id = request.data.get('invite')
-        invite = Invite.objects.get(id=invite_id)
-
-        if invite.state != Invite.InviteState.CREATED:
-            raise exceptions.ValidationError('Can no longer deny this invitation.')
-        if invite.email != request.user.email:
-            raise exceptions.ValidationError('This invite does not belong to you.')
-
-        invite.state = Invite.InviteState.DENIED
-        invite.save()
+        Membership.objects.create(organization=invite.organization, user=request.user)
 
         return Response({
             'invite': InviteSerializer(
@@ -130,6 +116,27 @@ class InviteViewSet(ReadOnlyMixin, ApiViewSet):
             },
             status=200
         )
+
+    # @action(detail=False, methods=['post'])
+    # def deny_invite(self, request, *args, **kwargs):
+    #     invite_id = request.data.get('invite')
+    #     invite = Invite.objects.get(id=invite_id)
+
+    #     if invite.state != Invite.InviteState.CREATED:
+    #         raise exceptions.ValidationError('Can no longer deny this invitation.')
+    #     if invite.email != request.user.email:
+    #         raise exceptions.ValidationError('This invite does not belong to you.')
+
+    #     invite.state = Invite.InviteState.DENIED
+    #     invite.save()
+
+    #     return Response({
+    #         'invite': InviteSerializer(
+    #             invite,
+    #             include_fields=InviteSerializer.Meta.deferred_fields).data
+    #         },
+    #         status=200
+    #     )
 
     @action(detail=False, methods=['post'])
     def cancel_invite(self, request, *args, **kwargs):

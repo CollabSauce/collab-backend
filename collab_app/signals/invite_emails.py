@@ -57,7 +57,7 @@ def email_on_invite_change(sender, instance, created, **kwargs):
     #     })
     #     send_email(subject, body, 'fakeemail@gmail.com', [invite.inviter.email], fail_silently=True)
 
-    elif state_changed and invite.state == invite.CANCELED:
+    elif state_changed and invite.state == invite.InviteState.CANCELED:
         organization_name = invite.organization.name
         inviter = invite.inviter
         subject = f'Your invitation to join {organization_name} organization has been canceled'
