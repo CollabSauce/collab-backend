@@ -119,11 +119,17 @@ class ProjectSerializer(ApiSerializer):
             'key',
             'url',
             'organization',
+            'tasks',
+            'task_columns',
         )
         deferred_fields = (
             'organization',
+            'tasks',
+            'task_columns',
         )
 
+    tasks = DynamicRelationField('TaskSerializer', many=True)
+    task_columns = DynamicRelationField('TaskColumnSerializer', many=True)
     organization = DynamicRelationField('OrganizationSerializer')
 
 
@@ -189,12 +195,15 @@ class TaskColumnSerializer(ApiSerializer):
         fields = (
             'id',
             'name',
+            'project',
             'tasks',
         )
         deferred_fields = (
+            'project',
             'tasks',
         )
 
+    project = DynamicRelationField('ProjectSerializer')
     tasks = DynamicRelationField('TaskSerializer', many=True)
 
 

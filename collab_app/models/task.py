@@ -5,6 +5,7 @@ from collab_app.mixins.models import BaseModel
 
 
 class Task(BaseModel):
+    title = models.TextField(blank=True, default='')
     description = models.TextField(blank=True, default='')
     design_edits = models.TextField(blank=True, default='')
     window_screenshot_url = models.TextField(blank=True, default='')
@@ -13,6 +14,9 @@ class Task(BaseModel):
     is_resolved = models.BooleanField(default=False)
     target_id = models.TextField(blank=True, default='')
     target_dom_path = models.TextField(blank=True, default='')
+
+    # for ordering inside a task_column
+    order = models.PositiveIntegerField(default=0)
 
     project = models.ForeignKey(
         'collab_app.Project',
@@ -36,8 +40,8 @@ class Task(BaseModel):
         constraints = [
             models.UniqueConstraint(fields=['task_number', 'project'], name='unique_tasknumber_project'),
             models.CheckConstraint(
-                name="%(app_label)s_%(class)s_description_or_design_edits",
-                check=(~Q(description='') | ~Q(design_edits=''))
+                name="%(app_label)s_%(class)s_title_or_design_edits",
+                check=(~Q(title='') | ~Q(design_edits=''))
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_target_id_or_dom_path",
@@ -48,6 +52,12 @@ class Task(BaseModel):
 
 class TaskColumn(BaseModel):
     name = models.TextField()
+
+    project = models.ForeignKey(
+        'collab_app.Project',
+        related_name='task_columns',
+        on_delete=models.PROTECT
+    )
 
 
 class TaskMetadata(BaseModel):
