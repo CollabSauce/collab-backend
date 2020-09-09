@@ -359,6 +359,34 @@ class TaskCommentViewSet(ReadOnlyMixin, ApiViewSet):
     serializer_class = TaskCommentSerializer
     permission_classes = (IsAuthenticated, )
 
+    @action(detail=False, methods=['post'])
+    def create_task_comment(self, request, *args, **kwargs):
+        task_id = request.data['task']
+        text = request.data['text']
+
+        # make sure user has access to this task
+        if not Task.objects.filter(
+            id=task_id,
+            project__organization__memberships__user=request.user
+        ):
+            raise exceptions.ValidationError(
+                'You do not have access to comment on this task.'
+            )
+
+        task_comment = TaskComment.objects.create(
+            text=text,
+            task_id=task_id,
+            creator=request.user,
+        )
+
+        return Response({
+            'task_comment': TaskCommentSerializer(
+                task_comment,
+                include_fields=TaskCommentSerializer.Meta.deferred_fields).data
+            },
+            status=201
+        )
+
 
 class TaskMetadataViewSet(ReadOnlyMixin, ApiViewSet):
     model = TaskMetadata
