@@ -223,6 +223,10 @@ class ProjectViewSet(NoUpdateMixin, NoDeleteMixin, ApiViewSet):
             raise exceptions.ValidationError(
                 'You must be an admin to create a project.'
             )
+        if Project.objects.filter(name=request.data['name'], organization=membership.organization).exists():
+            raise exceptions.ValidationError(
+                'This project name already exists for your organization.'
+            )
 
         request.data['key'] = get_random_string(length=32)
         request.data['organization'] = membership.organization.id
@@ -234,6 +238,44 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = (IsAuthenticated, )
+
+    @action(detail=False, methods=['post'])
+    def create_task(self, request, *args, **kwargs):
+        project_id = request.data['project']
+        task_column_id = request.data['task_column']
+
+        # make sure user has access to this project
+        if not Project.objects.filter(
+            id=project_id,
+            organization__memberships__user=request.user
+        ).exists():
+            raise exceptions.ValidationError(
+                'You do not have access to this project.'
+            )
+
+        # make sure the task column is part of the project
+        if not TaskColumn.objects.filter(project_id=project_id, id=task_column_id):
+            raise exceptions.ValidationError(
+                'Invalid task column.'
+            )
+
+        next_number = Task.objects.filter(project_id=project_id).count() + 1
+        task = Task.objects.create(
+            title=request.data['title'],
+            target_dom_path=request.data['target_dom_path'],
+            project_id=project_id,
+            task_column_id=task_column_id,
+            creator=request.user,
+            task_number=next_number
+        )
+
+        return Response({
+            'task': TaskSerializer(
+                task,
+                include_fields=TaskSerializer.Meta.deferred_fields).data
+            },
+            status=201
+        )
 
     @action(detail=False, methods=['get'])
     def signature(self, request, *args, **kwargs):
@@ -264,6 +306,44 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
           'data': presigned_post,
           'url': f'https://{s3_bucket}.s3.amazonaws.com/{file_name}'
         })
+
+    @action(detail=False, methods=['post'])
+    def reorder_tasks(self, request, *args, **kwargs):
+        task_data = request.data
+        task_ids = [task['id'] for task in task_data]
+
+        # get the specified tasks. make sure they belong to the correct specified project
+        # and that the user has access to those tasks.
+        tasks = Task.objects.filter(
+            id__in=task_ids,
+            project_id=task_data[0]['project'],
+            project__organization__memberships__user=request.user
+        )
+
+        if len(tasks) != len(task_ids):
+            raise exceptions.ValidationError('Moving card invalid. Please contact support')
+
+        # create task map
+        task_map = {}
+        for json_task in task_data:
+            task_map[json_task['id']] = json_task
+
+        # now for each djang0-task, update order and task column
+        for task in tasks:
+            json_task = task_map[task.id]
+            task.order = json_task['order']
+            task.task_column_id = json_task['task_column']
+
+        Task.objects.bulk_update(tasks, ['order', 'task_column'])
+
+        return Response({
+            'tasks': TaskSerializer(
+                tasks,
+                many=True,
+                include_fields=TaskSerializer.Meta.deferred_fields).data
+            },
+            status=200
+        )
 
 
 class TaskColumnViewSet(ReadOnlyMixin, ApiViewSet):

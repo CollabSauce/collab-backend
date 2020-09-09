@@ -100,7 +100,7 @@ class UserPermission(BaseObjectPermission):
             Q(id=user.id) |
             Q(memberships__organization__memberships__user=user) |
             Q(created_tasks__project__organization__memberships__user=user) |
-            Q(created_tasks_comments__project__organization__memberships__user=user)
+            Q(created_task_comments__task__project__organization__memberships__user=user)
         )
 
     def update(self, queryset, user):

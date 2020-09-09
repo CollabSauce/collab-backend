@@ -150,9 +150,11 @@ class TaskSerializer(ApiSerializer):
             'target_dom_path',
             'creator',
             'project',
+            'order',
             'task_column',
             'task_comments',
             'task_metadata',
+            'title',
         )
         deferred_fields = (
             'creator',
