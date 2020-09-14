@@ -216,13 +216,20 @@ class TaskMetadataSerializer(ApiSerializer):
         fields = (
             'id',
             'url_origin',
-            'operating_system',
-            'browser',
+            'os_name',
+            'os_version',
+            'os_version_name',
+            'browser_name',
+            'browser_version',
             'selector',
-            'resolution',
-            'browser_window',
+            'screen_height',
+            'screen_width',
+            'device_pixel_ratio',
+            'browser_window_width',
+            'browser_window_height',
             'color_depth',
-            'task'
+            'pixel_depth',
+            'task',
         )
         deferred_fields = (
             'task',

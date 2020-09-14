@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 from corsheaders.defaults import default_headers
+from playwright import sync_playwright
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -203,12 +204,16 @@ CELERY_EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # Celery
 CELERY_BROKER_URL = os.environ.get('CLOUDAMQP_URL', '')
 CELERY_BROKER_POOL_LIMIT = 1  # for now on free cloudamqp tier (heroku) (can increase later if needed)
+# Fixes this bug: AttributeError: 'LoggingProxy' object has no attribute 'fileno' when using playwright
+# here: https://github.com/celery/celery/issues/928
 
 # CORS
 # TODO(BRANDON) Fix for dev/stage/prod
 CORS_ORIGIN_WHITELIST = [
     "http://localhost:3000",
-    "http://127.0.0.1:3000"
+    "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001"
 ]
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'custom-resource',  # for js-data on frontend :/
@@ -218,5 +223,5 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 # all we have to set is the S3_BUCKET name
 S3_BUCKET = os.environ.get(
     'S3_BUCKET',
-    'coachtemp'
+    'collabtemp-dev'
 )

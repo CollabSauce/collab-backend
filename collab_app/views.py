@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from allauth.account.models import EmailAddress
-import boto3
 from django.conf import settings
 from django.utils.crypto import get_random_string
 from dynamic_rest.viewsets import DynamicModelViewSet
@@ -47,6 +46,7 @@ from collab_app.serializers import (
     TaskMetadataSerializer,
     UserSerializer,
 )
+from collab_app.tasks import create_screenshots_for_task
 
 
 class ApiViewSet(GateKeeper, AddCreatorMixin, SaveMixin, DynamicModelViewSet):
@@ -277,36 +277,6 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
             status=201
         )
 
-    @action(detail=False, methods=['get'])
-    def signature(self, request, *args, **kwargs):
-        s3_bucket = getattr(settings, 'S3_BUCKET')
-        organization = request.query_params.get('organization', None)
-        file_type = 'png'  # TODO: other img file-types?
-
-        if not organization:
-            raise exceptions.ValidationError(
-                'Must provide organization query-param'
-            )
-
-        file_name = f'{organization}__{datetime.now().isoformat()}.{file_type}'
-        s3 = boto3.client('s3')
-
-        presigned_post = s3.generate_presigned_post(
-            s3_bucket,
-            file_name,
-            Fields={'acl': 'public-read', 'Content-Type': file_type},
-            Conditions=[
-                {'acl': 'public-read'},
-                {'Content-Type': file_type}
-            ],
-            ExpiresIn=120
-        )
-
-        return Response({
-          'data': presigned_post,
-          'url': f'https://{s3_bucket}.s3.amazonaws.com/{file_name}'
-        })
-
     @action(detail=False, methods=['post'])
     def reorder_tasks(self, request, *args, **kwargs):
         task_data = request.data
@@ -343,6 +313,69 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
                 include_fields=TaskSerializer.Meta.deferred_fields).data
             },
             status=200
+        )
+
+    @action(detail=False, methods=['post'])
+    def create_task_from_widget(self, request, *args, **kwargs):
+        task_request_data = request.data['task']
+        task_metadata_request_data = request.data['task_metadata']
+        html = request.data['html']
+
+        # make sure user has access to this project
+        project_id = task_request_data['project']
+        if not Project.objects.filter(
+            id=project_id,
+            organization__memberships__user=request.user
+        ).exists():
+            raise exceptions.ValidationError(
+                'You do not have access to this project.'
+            )
+
+        task_column = TaskColumn.objects.get(project_id=project_id, name=TaskColumn.TASK_COLUMN_RAW_TASK)
+        next_number = Task.objects.filter(project_id=project_id).count() + 1
+        task = Task.objects.create(
+            title=task_request_data['title'],
+            target_dom_path=task_request_data['target_dom_path'],
+            design_edits=task_request_data['design_edits'],
+            project_id=project_id,
+            task_column=task_column,
+            creator=request.user,
+            task_number=next_number
+        )
+        task_metadata = TaskMetadata.objects.create(
+            task=task,
+            url_origin=task_metadata_request_data['url_origin'],
+            os_name=task_metadata_request_data['os_name'],
+            os_version=task_metadata_request_data['os_version'],
+            os_version_name=task_metadata_request_data['os_version_name'],
+            browser_name=task_metadata_request_data['browser_name'],
+            browser_version=task_metadata_request_data['browser_version'],
+            selector=task_metadata_request_data['selector'],
+            screen_height=task_metadata_request_data['screen_height'],
+            screen_width=task_metadata_request_data['screen_width'],
+            device_pixel_ratio=task_metadata_request_data['device_pixel_ratio'],
+            browser_window_width=task_metadata_request_data['browser_window_width'],
+            browser_window_height=task_metadata_request_data['browser_window_height'],
+            color_depth=task_metadata_request_data['color_depth'],
+            pixel_depth=task_metadata_request_data['pixel_depth'],
+        )
+
+        task_id = task.id
+        browser_name = task_metadata.browser_name
+        device_scale_factor = task_metadata.device_pixel_ratio
+        window_width = task_metadata.browser_window_width
+        window_height = task_metadata.browser_window_height
+        create_screenshots_for_task.delay(task_id, html, browser_name, device_scale_factor, window_width, window_height)
+
+        return Response({
+            'task': TaskSerializer(
+                task,
+                include_fields=TaskSerializer.Meta.deferred_fields).data,
+            'task_metadata': TaskMetadataSerializer(
+                task_metadata,
+                include_fields=TaskMetadataSerializer.Meta.deferred_fields).data
+            },
+            status=201
         )
 
 

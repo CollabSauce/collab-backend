@@ -50,7 +50,8 @@ class Task(BaseModel):
         ]
 
 class TaskColumn(BaseModel):
-    TASK_COLUMN_NAMES = ['Raw Task', 'To-Do', 'In Progress', 'In Review', 'Done', 'Released']
+    TASK_COLUMN_RAW_TASK = 'Raw Task'
+    TASK_COLUMN_NAMES = [TASK_COLUMN_RAW_TASK, 'To-Do', 'In Progress', 'In Review', 'Done', 'Released']
 
     name = models.TextField()
 
@@ -63,12 +64,19 @@ class TaskColumn(BaseModel):
 
 class TaskMetadata(BaseModel):
     url_origin = models.TextField(default='')
-    operating_system = models.TextField(default='')
-    browser = models.TextField(default='')
+    os_name = models.TextField(default='')
+    os_version = models.TextField(default='')
+    os_version_name = models.TextField(default='')
+    browser_name = models.TextField(default='')
+    browser_version = models.TextField(default='')
     selector = models.TextField(default='')
-    resolution = models.TextField(default='')
-    browser_window = models.TextField(default='')
-    color_depth = models.TextField(default='')
+    screen_height = models.PositiveSmallIntegerField(default=0)
+    screen_width = models.PositiveSmallIntegerField(default=0)
+    device_pixel_ratio = models.PositiveSmallIntegerField(default=0)
+    browser_window_width = models.PositiveSmallIntegerField(default=0)
+    browser_window_height = models.PositiveSmallIntegerField(default=0)
+    color_depth = models.PositiveSmallIntegerField(default=0)
+    pixel_depth = models.PositiveSmallIntegerField(default=0)
 
     task = models.OneToOneField(
         'collab_app.Task',

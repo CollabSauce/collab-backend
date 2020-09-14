@@ -50,12 +50,12 @@ Quick docker tips:
     * Inside that container, find the location of the package you want. Say you want to debug the `django` library. Run:
         ```sh
         # pip show django
-        >> Location: /usr/local/lib/python3.6/site-packages
-        # cd /usr/local/lib/python3.6/site-packages
+        >> Location: /usr/local/lib/python3.7/site-packages
+        # cd /usr/local/lib/python3.7/site-packages
         ```
     * Exit out of the container. Now, copy the file from container to host using `docker cp`. Note, you should run this from the root of the collab-backend.
         ```sh
-        $ docker cp collab_backend_web:/usr/local/lib/python3.6/site-packages/django .
+        $ docker cp collab_backend_web:/usr/local/lib/python3.7/site-packages/django .
         ```
     * Now add logging or pdb to the django package.
 * **Shell into the psql command-line client**: There are multiple ways to do so:

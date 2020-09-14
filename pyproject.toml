@@ -5,7 +5,7 @@ description = ""
 authors = ["Your Name <you@example.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.7"
 Django = "3.0.4"
 django-debug-toolbar = "^2.2"
 django-celery-email = "^3.0.0"
@@ -17,6 +17,7 @@ ipython = "7.13.0"
 django-cors-headers = "^3.4.0"
 redis = "^3.5.3"
 boto3 = "^1.14.56"
+playwright = "^0.140.0"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.8.3"

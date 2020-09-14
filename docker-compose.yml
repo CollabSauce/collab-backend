@@ -16,6 +16,9 @@ services:
       - 8000:8000
     env_file:
       - ./.env.dev
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     depends_on:
       - db
       - redis
@@ -33,6 +36,9 @@ services:
       - ".:/app"
     env_file:
       - ./.env.dev
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     depends_on:
       - db
       - redis
