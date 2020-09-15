@@ -66,6 +66,7 @@ def create_screenshots_for_task(task_id, html, browser_name, device_scale_factor
                 el.value = val;
             });
             document.getElementById('collab-sauce-iframe').style.display = 'none';
+            document.querySelector('.CollabSauce__outline__').classList.remove('CollabSauce__outline__')
         }''')
         page.screenshot(path=window_screenshot_filepath, type='png')
         element = page.querySelector('[data-collab-selected-element]')
