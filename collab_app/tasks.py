@@ -77,8 +77,22 @@ def create_screenshots_for_task(task_id, html, browser_name, device_scale_factor
     s3_bucket = getattr(settings, 'S3_BUCKET')
     window_file_name = f'{organization.id}/{project.id}/{file_key}-window.png'
     element_file_name = f'{organization.id}/{project.id}/{file_key}-element.png'
-    s3.Bucket(s3_bucket).upload_file(window_screenshot_filepath, window_file_name)
-    s3.Bucket(s3_bucket).upload_file(element_screenshot_filepath, element_file_name)
+    s3.meta.client.upload_file(
+        Filename=window_screenshot_filepath,
+        Bucket=s3_bucket,
+        Key=window_file_name,
+        ExtraArgs={
+            'ContentType': 'image/png'
+        }
+    )
+    s3.meta.client.upload_file(
+        Filename=element_screenshot_filepath,
+        Bucket=s3_bucket,
+        Key=element_file_name,
+        ExtraArgs={
+            'ContentType': 'image/png'
+        }
+    )
 
     try:
       os.remove(window_screenshot_filepath)
