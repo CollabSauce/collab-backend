@@ -229,6 +229,7 @@ class TaskMetadataSerializer(ApiSerializer):
             'browser_window_height',
             'color_depth',
             'pixel_depth',
+            'created',
             'task',
         )
         deferred_fields = (
