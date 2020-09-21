@@ -75,6 +75,7 @@ WORKDIR /app
 # note:
 #	--no-interaction: not to ask any interactive questions
 # 	--no-ansi: flag to make your output more log friendly
+RUN pwd && ls -a
 COPY poetry.lock pyproject.toml /app/
 RUN pip install --no-cache-dir --upgrade pip \
 	&& pip install --no-cache-dir poetry==1.0.5 \
