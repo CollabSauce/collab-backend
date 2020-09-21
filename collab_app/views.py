@@ -93,11 +93,13 @@ class InviteViewSet(ReadOnlyMixin, ApiViewSet):
     @action(detail=False, methods=['post'])
     def accept_invite(self, request, *args, **kwargs):
 
-        invite = Invite.objects.get(email=request.user.email)
+        invite = Invite.objects.filter(email=request.user.email, state=Invite.InviteState.CREATED).first()
         key = request.data.get('key')
 
         if not request.user.is_authenticated:
             raise exceptions.ValidationError('You must be logged in to accept an invite.')
+        if not invite:
+            raise exceptions.ValidationError('Invite note found.')
         if invite.state != Invite.InviteState.CREATED:
             raise exceptions.ValidationError('Can no longer accept this invitation.')
         if invite.email != request.user.email:
@@ -260,9 +262,11 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
             )
 
         next_number = Task.objects.filter(project_id=project_id).count() + 1
+        last_task_in_column = Task.objects.filter(project_id=project_id, task_column_id=task_column_id).order_by('-order').first()
         task = Task.objects.create(
             title=request.data['title'],
             target_dom_path=request.data['target_dom_path'],
+            order=last_task_in_column.order + 1 if last_task_in_column else 1,
             project_id=project_id,
             task_column_id=task_column_id,
             creator=request.user,
@@ -333,10 +337,12 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
 
         task_column = TaskColumn.objects.get(project_id=project_id, name=TaskColumn.TASK_COLUMN_RAW_TASK)
         next_number = Task.objects.filter(project_id=project_id).count() + 1
+        last_task_in_column = Task.objects.filter(project_id=project_id, task_column=task_column).order_by('-order').first()
         task = Task.objects.create(
             title=task_request_data['title'],
             target_dom_path=task_request_data['target_dom_path'],
             design_edits=task_request_data['design_edits'],
+            order=last_task_in_column.order + 1 if last_task_in_column else 1,
             project_id=project_id,
             task_column=task_column,
             creator=request.user,

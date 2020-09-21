@@ -94,13 +94,10 @@ class TaskCommentPermission(BaseObjectPermission):
 class UserPermission(BaseObjectPermission):
     def read(self, queryset, user):
         # can read your own user,
-        # or other users of the orgs you belong to,
-        # or if you can see a task or task-comment they created
+        # or other users of the orgs you belong to.
         return queryset.filter(
             Q(id=user.id) |
-            Q(memberships__organization__memberships__user=user) |
-            Q(created_tasks__project__organization__memberships__user=user) |
-            Q(created_task_comments__task__project__organization__memberships__user=user)
+            Q(memberships__organization__memberships__user=user)
         )
 
     def update(self, queryset, user):

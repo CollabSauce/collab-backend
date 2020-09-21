@@ -21,7 +21,7 @@ class Invite(BaseModel):
         on_delete=models.PROTECT
     )
 
-    email = models.EmailField(unique=True)
+    email = models.EmailField()
     state = models.PositiveSmallIntegerField(choices=InviteState.choices, default=InviteState.CREATED)
     key = models.CharField(max_length=64, unique=True, default='')
 

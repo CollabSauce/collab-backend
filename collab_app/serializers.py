@@ -149,6 +149,7 @@ class TaskSerializer(ApiSerializer):
             'target_id',
             'target_dom_path',
             'creator',
+            'creator_full_name',
             'project',
             'order',
             'task_column',
@@ -165,10 +166,14 @@ class TaskSerializer(ApiSerializer):
         )
 
     creator = DynamicRelationField('UserSerializer')
+    creator_full_name = DynamicMethodField(requires=[ 'creator.'])
     project = DynamicRelationField('ProjectSerializer')
     task_column = DynamicRelationField('TaskColumnSerializer')
     task_comments = DynamicRelationField('TaskCommentSerializer', many=True)
     task_metadata = DynamicRelationField('TaskMetadataSerializer')
+
+    def get_creator_full_name(self, task):
+        return f'{task.creator.first_name} {task.creator.last_name}'
 
 
 class TaskCommentSerializer(ApiSerializer):
@@ -178,6 +183,7 @@ class TaskCommentSerializer(ApiSerializer):
         fields = (
             'id',
             'creator',
+            'creator_full_name',
             'task',
             'text',
         )
@@ -187,7 +193,11 @@ class TaskCommentSerializer(ApiSerializer):
         )
 
     creator = DynamicRelationField('UserSerializer')
+    creator_full_name = DynamicMethodField(requires=[ 'creator.'])
     task = DynamicRelationField('TaskSerializer')
+
+    def get_creator_full_name(self, task_comment):
+        return f'{task_comment.creator.first_name} {task_comment.creator.last_name}'
 
 
 class TaskColumnSerializer(ApiSerializer):
