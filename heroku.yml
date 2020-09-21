@@ -3,10 +3,9 @@ build:
     web: worker/Dockerfile
     worker: worker/Dockerfile
 release:
-  web:
-    command:
-      - ./docker/production-tasks.sh
-    image: web
+  command:
+    - ./docker/production-tasks.sh
+  image: web
 run:
   web:
     command:
