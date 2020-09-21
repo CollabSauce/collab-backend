@@ -95,9 +95,7 @@ class InviteViewSet(ReadOnlyMixin, ApiViewSet):
 
         if not request.user.is_authenticated:
             raise exceptions.ValidationError('You must be logged in to accept an invite.')
-        if not invite:
-            raise exceptions.ValidationError('Invite note found.')
-        if invite.state != Invite.InviteState.CREATED:
+        if not invite or invite.state != Invite.InviteState.CREATED:
             raise exceptions.ValidationError('Can no longer accept this invitation.')
         if invite.email != request.user.email:
             raise exceptions.ValidationError('This invite does not belong to you.')
