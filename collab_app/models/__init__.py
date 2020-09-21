@@ -10,6 +10,7 @@ from collab_app.models.user import User
 from collab_app.signals.create_profile import create_profile_on_user_create
 from collab_app.signals.invite_emails import email_on_invite_change
 from collab_app.signals.create_task_columns import create_task_columns_on_project_create
+from collab_app.signals.notify_on_task_comment import notify_on_task_create, notify_on_task_comment_create
 
 # for flake8
 __all__ = [
@@ -26,4 +27,6 @@ __all__ = [
     'create_profile_on_user_create',
     'email_on_invite_change',
     'create_task_columns_on_project_create',
+    'notify_on_task_create',
+    'notify_on_task_comment_create'
 ]
