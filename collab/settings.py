@@ -11,7 +11,9 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+
 from corsheaders.defaults import default_headers
+import dj_database_url
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -21,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '87r&i3cwg$ky)s!zvq(ruj#a24r6ly5rhbs!=#8(^*=1-6^kv('
+SECRET_KEY = os.environ.get('SECRET_KEY', '87r&i3cwg$ky)s!zvq(ruj#a24r6ly5rhbs!=#8(^*=1-6^kv(')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(os.environ.get("DEBUG", default=0))
@@ -61,6 +63,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -105,17 +108,20 @@ WSGI_APPLICATION = 'collab.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("POSTGRES_DB"),
-        "USER": os.environ.get("POSTGRES_USER"),
-        "HOST": os.environ.get("POSTGRES_HOST"),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
-        "PORT": os.environ.get("POSTGRES_PORT"),
+if os.environ.get('environment', 'developement') == 'development':
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("POSTGRES_DB"),
+            "USER": os.environ.get("POSTGRES_USER"),
+            "HOST": os.environ.get("POSTGRES_HOST"),
+            "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
+            "PORT": os.environ.get("POSTGRES_PORT"),
+        }
     }
-}
+else:
+    # uses the DATABASE_URL env var
+    DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -205,8 +211,6 @@ CELERY_EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # Celery
 CELERY_BROKER_URL = os.environ.get('CLOUDAMQP_URL', '')
 CELERY_BROKER_POOL_LIMIT = 1  # for now on free cloudamqp tier (heroku) (can increase later if needed)
-# Fixes this bug: AttributeError: 'LoggingProxy' object has no attribute 'fileno' when using playwright
-# here: https://github.com/celery/celery/issues/928
 
 # CORS
 # TODO(BRANDON) Fix for dev/stage/prod
@@ -214,7 +218,8 @@ CORS_ORIGIN_WHITELIST = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:3001",
-    "http://127.0.0.1:3001"
+    "http://127.0.0.1:3001",
+    "*"  # TODO: UPDATE
 ]
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'custom-resource',  # for js-data on frontend :/
@@ -226,3 +231,23 @@ S3_BUCKET = os.environ.get(
     'S3_BUCKET',
     'collabtemp-dev'
 )
+
+#######
+# For heroku:
+#######
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')
+
+# Extra places for collectstatic to find static files.
+STATICFILES_DIRS = (
+    os.path.join(PROJECT_ROOT, 'static'),
+)
+
+# Simplified static file serving.
+# https://warehouse.python.org/project/whitenoise/
+
+STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+
+#######
+# End For heroku
+#######

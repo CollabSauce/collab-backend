@@ -1,0 +1,17 @@
+build:
+  docker:
+    web: worker/Dockerfile
+    worker: worker/Dockerfile
+release:
+  command:
+    - ./docker/production-tasks.sh
+  image: web
+run:
+  web:
+    command:
+      -gunicorn collab.wsgi:application --bind 0.0.0.0:$PORT
+    image: web
+  worker:
+    command:
+      - celery -A collab worker -l info
+    image: worker
