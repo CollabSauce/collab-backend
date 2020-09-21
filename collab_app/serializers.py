@@ -166,7 +166,7 @@ class TaskSerializer(ApiSerializer):
         )
 
     creator = DynamicRelationField('UserSerializer')
-    creator_full_name = DynamicMethodField(requires=[ 'creator.'])
+    creator_full_name = DynamicMethodField(requires=['creator.'])
     project = DynamicRelationField('ProjectSerializer')
     task_column = DynamicRelationField('TaskColumnSerializer')
     task_comments = DynamicRelationField('TaskCommentSerializer', many=True)
@@ -193,7 +193,7 @@ class TaskCommentSerializer(ApiSerializer):
         )
 
     creator = DynamicRelationField('UserSerializer')
-    creator_full_name = DynamicMethodField(requires=[ 'creator.'])
+    creator_full_name = DynamicMethodField(requires=['creator.'])
     task = DynamicRelationField('TaskSerializer')
 
     def get_creator_full_name(self, task_comment):

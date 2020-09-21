@@ -102,8 +102,8 @@ def create_screenshots_for_task(task_id, html, browser_name, device_scale_factor
     )
 
     try:
-      os.remove(window_screenshot_filepath)
-      os.remove(element_screenshot_filepath)
+        os.remove(window_screenshot_filepath)
+        os.remove(element_screenshot_filepath)
     except Exception as err:
         print('Error while deleting files')
         print(err)
@@ -171,7 +171,7 @@ def notify_participants_of_task_comment(task_comment_id):
         matches = re.findall(regex, comment.text)
         for user_id in matches:
             mentioned = User.objects.get(id=user_id)
-            users_to_notify.append(mentioned) # notify anyone who has been previously mentioned on a task
+            users_to_notify.append(mentioned)  # notify anyone who has been previously mentioned on a task
 
     for user in users_to_notify:
         if user not in already_mentioned:

@@ -49,6 +49,7 @@ class Task(BaseModel):
             )
         ]
 
+
 class TaskColumn(BaseModel):
     TASK_COLUMN_RAW_TASK = 'Raw Task'
     TASK_COLUMN_NAMES = [TASK_COLUMN_RAW_TASK, 'To-Do', 'In Progress', 'In Review', 'Done', 'Released']

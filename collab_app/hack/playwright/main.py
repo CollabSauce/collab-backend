@@ -36,7 +36,6 @@ async def run_driver_async() -> Connection:
     driver_name = compute_driver_name()
     driver_executable = package_path / "drivers" / driver_name
 
-    # Sourced from: https://github.com/pytest-dev/pytest/blob/49827adcb9256c9c9c06a25729421dcc3c385edc/src/_pytest/faulthandler.py#L73-L80
     def _get_stderr_fileno() -> int:
         try:
             return sys.stderr.fileno()
@@ -50,7 +49,7 @@ async def run_driver_async() -> Connection:
         str(driver_executable),
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE, # THIS IS THE LINE THAT COLLAB_SAUCE CHANGED
+        stderr=asyncio.subprocess.PIPE,  # THIS IS THE LINE THAT COLLAB_SAUCE CHANGED
         limit=32768,
     )
     assert proc.stdout

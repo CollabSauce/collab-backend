@@ -1,7 +1,4 @@
-from datetime import datetime
-
 from allauth.account.models import EmailAddress
-from django.conf import settings
 from django.utils.crypto import get_random_string
 from dynamic_rest.viewsets import DynamicModelViewSet
 from rest_framework.decorators import action
@@ -262,7 +259,10 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
             )
 
         next_number = Task.objects.filter(project_id=project_id).count() + 1
-        last_task_in_column = Task.objects.filter(project_id=project_id, task_column_id=task_column_id).order_by('-order').first()
+        last_task_in_column = Task.objects.filter(
+            project_id=project_id,
+            task_column_id=task_column_id
+        ).order_by('-order').first()
         task = Task.objects.create(
             title=request.data['title'],
             target_dom_path=request.data['target_dom_path'],
@@ -337,7 +337,10 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
 
         task_column = TaskColumn.objects.get(project_id=project_id, name=TaskColumn.TASK_COLUMN_RAW_TASK)
         next_number = Task.objects.filter(project_id=project_id).count() + 1
-        last_task_in_column = Task.objects.filter(project_id=project_id, task_column=task_column).order_by('-order').first()
+        last_task_in_column = Task.objects.filter(
+            project_id=project_id,
+            task_column=task_column
+        ).order_by('-order').first()
         task = Task.objects.create(
             title=task_request_data['title'],
             target_dom_path=task_request_data['target_dom_path'],

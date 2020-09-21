@@ -25,9 +25,24 @@ class InvitePermissionTestCase(BaseApiSetUp):
         self.organization2 = mommy.make(Organization)
         self.organization3 = mommy.make(Organization)
 
-        self.m1 = mommy.make(Membership, role=Membership.RoleType.ADMIN, user=self.user, organization=self.organization1)
-        self.m2 = mommy.make(Membership, role=Membership.RoleType.DASHBOARD, user=self.other_user, organization=self.organization2)
-        self.m3 = mommy.make(Membership, role=Membership.RoleType.DASHBOARD, user=self.user, organization=self.organization3)
+        self.m1 = mommy.make(
+            Membership,
+            role=Membership.RoleType.ADMIN,
+            user=self.user,
+            organization=self.organization1
+        )
+        self.m2 = mommy.make(
+            Membership,
+            role=Membership.RoleType.DASHBOARD,
+            user=self.other_user,
+            organization=self.organization2
+        )
+        self.m3 = mommy.make(
+            Membership,
+            role=Membership.RoleType.DASHBOARD,
+            user=self.user,
+            organization=self.organization3
+        )
 
         self.i1 = mommy.make(Invite, organization=self.organization1, email='hi@hi.com', key='abd')
         self.i2 = mommy.make(Invite, organization=self.organization2, key='aad')

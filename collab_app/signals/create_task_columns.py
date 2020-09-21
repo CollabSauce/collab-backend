@@ -20,4 +20,3 @@ def create_task_columns_on_project_create(sender, instance, created, **kwargs):
                 name=name,
                 project=project
             )
-
