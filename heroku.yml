@@ -13,5 +13,5 @@ run:
     image: web
   worker:
     command:
-      - celery -A collab worker -l info
+      - python -m playwright install && celery -A collab worker -l info
     image: worker
