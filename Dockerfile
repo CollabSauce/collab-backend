@@ -92,3 +92,10 @@ COPY . /app/
 # We get this issue when using playwright with celery. https://github.com/celery/celery/issues/928
 # This hackily fixes the issue.
 RUN cp collab_app/hack/playwright/main.py /usr/local/lib/python3.7/site-packages/playwright/main.py
+
+# needed for heroku :/ . https://stackoverflow.com/a/62102995/9711626
+RUN python manage.py collectstatic --noinput
+
+# # dont run as root
+# RUN adduser -D myuser
+# USER myuser

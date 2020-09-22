@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 
 from corsheaders.defaults import default_headers
+from django.core.management.utils import get_random_secret_key
 import dj_database_url
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -22,11 +23,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', '87r&i3cwg$ky)s!zvq(ruj#a24r6ly5rhbs!=#8(^*=1-6^kv(')
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(os.environ.get("DEBUG", default=0))
+
+# SECURITY WARNING: keep the secret key used in production secret!
+#  Weird `default` logic needed for heroku :/ . https://stackoverflow.com/a/62102995/9711626
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY',
+    default='87r&i3cwg$ky)s!zvq(ruj#a24r6ly5rhbs!=#8(^*=1-6^kv(' if DEBUG else get_random_secret_key()
+)
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(" ")
 
