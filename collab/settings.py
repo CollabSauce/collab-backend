@@ -211,8 +211,11 @@ LOGIN_REDIRECT_URL = '/api'
 # email config
 EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
 # uncomment if want to print to console
-CELERY_EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-# CELERY_EMAIL_BACKEND = os.environ.get('CELERY_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+if os.environ.get('ENVIRONMENT', 'development') == 'development':
+    CELERY_EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    # default to smtp.EmailBackend (celery default anyways)
+    CELERY_EMAIL_BACKEND = os.environ.get('CELERY_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
 
 # Celery
 CELERY_BROKER_URL = os.environ.get('CLOUDAMQP_URL', '')
