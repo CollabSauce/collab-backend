@@ -28,7 +28,7 @@ def email_on_invite_change(sender, instance, created, **kwargs):
             'inviter_name': f'{inviter.first_name} {inviter.last_name}',
             'organization_name': organization_name
         })
-        send_email.delay(subject, body, settings.EMAIL_HOST_USER, [invite.email], fail_silently=True)
+        send_email.delay(subject, body, settings.EMAIL_HOST_USER, [invite.email], fail_silently=False)
 
     # TODO: send emails on user acceptance?
     # elif state_changed and invite.state == invite.ACCEPTED:
@@ -66,4 +66,4 @@ def email_on_invite_change(sender, instance, created, **kwargs):
             'inviter_name': f'{inviter.first_name} {inviter.last_name}',
             'organization_name': organization_name
         })
-        send_email.delay(subject, body, settings.EMAIL_HOST_USER, [invite.email], fail_silently=True)
+        send_email.delay(subject, body, settings.EMAIL_HOST_USER, [invite.email], fail_silently=False)
