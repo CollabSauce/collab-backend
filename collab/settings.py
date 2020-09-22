@@ -210,6 +210,7 @@ LOGIN_REDIRECT_URL = '/api'
 # email config
 if os.environ.get('ENVIRONMENT', 'development') == 'development':
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 else:
     # default to smtp.EmailBackend (celery default anyways)
     EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')

@@ -136,7 +136,7 @@ def notify_participants_of_task(task_id):
                 'task_creator_name': task_creator_name,
                 'task_url': f'https://app.collabsauce.com/projects/{task.project.id}/tasks/{task_id}'
             })
-            send_email.delay(subject, body, 'info@collabsauce.com', [mentioned.email], fail_silently=True)
+            send_email.delay(subject, body, settings.EMAIL_HOST_USER, [mentioned.email], fail_silently=True)
         except Exception as err:
             print('Error while notifying on task create')
             print(err)
@@ -165,7 +165,7 @@ def notify_participants_of_task_comment(task_comment_id):
                 'taskcomment_creator_name': taskcomment_creator_name,
                 'task_url': f'https://app.collabsauce.com/projects/{project_id}/tasks/{task.id}'
             })
-            send_email.delay(subject, body, 'info@collabsauce.com', [mentioned.email], fail_silently=True)
+            send_email.delay(subject, body, settings.EMAIL_HOST_USER, [mentioned.email], fail_silently=True)
             already_mentioned.add(mentioned)
         except Exception as err:
             print('Error while notifying on task comment create')
@@ -188,7 +188,7 @@ def notify_participants_of_task_comment(task_comment_id):
                     'taskcomment_creator_name': taskcomment_creator_name,
                     'task_url': f'https://app.collabsauce.com/projects/{project_id}/tasks/{task.id}'
                 })
-                send_email.delay(subject, body, 'info@collabsauce.com', [user.email], fail_silently=True)
+                send_email.delay(subject, body, settings.EMAIL_HOST_USER, [user.email], fail_silently=True)
                 already_mentioned.add(user)
             except Exception as err:
                 print('Error while notifying on task comment notify all create')
