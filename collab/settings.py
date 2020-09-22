@@ -109,7 +109,7 @@ WSGI_APPLICATION = 'collab.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 DATABASES = {}
-if os.environ.get('environment', 'developement') == 'development':
+if os.environ.get('ENVIRONMENT', 'development') == 'development':
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -220,11 +220,11 @@ CORS_ORIGIN_WHITELIST = [
     "http://127.0.0.1:3000",
     "http://localhost:3001",
     "http://127.0.0.1:3001",
-    "*"  # TODO: UPDATE
 ]
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'custom-resource',  # for js-data on frontend :/
 ]
+CORS_ALLOW_ALL_ORIGINS = True  # update
 
 # For s3 (boto3 automatically checks ENV Vars for AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)
 # all we have to set is the S3_BUCKET name
@@ -236,18 +236,18 @@ S3_BUCKET = os.environ.get(
 #######
 # For heroku:
 #######
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')
+# PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Extra places for collectstatic to find static files.
 STATICFILES_DIRS = (
-    os.path.join(PROJECT_ROOT, 'static'),
+    os.path.join(BASE_DIR, 'static'),
 )
 
 # Simplified static file serving.
 # https://warehouse.python.org/project/whitenoise/
 
-STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 #######
 # End For heroku
