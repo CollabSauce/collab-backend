@@ -83,19 +83,26 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip uninstall --yes poetry \
     && rm -rf ~/.config/pypoetry
 
+# NON-root user. mimics heroku
+RUN useradd -m myuser
+USER myuser
+
 # more playwright
 RUN python -m playwright install
 
 # Copy project
 COPY . /app/
 
+# switch to root so we can set /app as `myuser` owner. Also switch to root so we can do the playwright cp hack below.
+USER root
+RUN chown -R myuser /app
+
 # We get this issue when using playwright with celery. https://github.com/celery/celery/issues/928
 # This hackily fixes the issue.
 RUN cp collab_app/hack/playwright/main.py /usr/local/lib/python3.7/site-packages/playwright/main.py
 
+# Switch back to myuser
+USER myuser
+
 # needed for heroku :/ . https://stackoverflow.com/a/62102995/9711626
 RUN python manage.py collectstatic --noinput
-
-# # dont run as root
-# RUN adduser -D myuser
-# USER myuser

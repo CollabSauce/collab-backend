@@ -34,16 +34,20 @@ def create_screenshots_for_task(task_id, html, browser_name, device_scale_factor
 
     with sync_playwright() as p:
         lower_bname = browser_name.lower()
-        if lower_bname == 'chrome':
-            chosen_browser = p.chromium
-        elif lower_bname == 'safari':
-            chosen_browser = p.webkit
-        elif lower_bname == 'firefox':
-            chosen_browser = p.firefox
-        else:
-            chosen_browser = p.chromium  # not a chrome/safari/firefox browser. default to chrome
+        chosen_browser = p.chromium
 
-        browser = chosen_browser.launch()
+        # FOR NOW JUST USE CHROME... bug with safari? firefox not rendering inputs?
+        # if lower_bname == 'chrome':
+        #     chosen_browser = p.chromium
+        # elif lower_bname == 'safari':
+        #     chosen_browser = p.webkit
+        # elif lower_bname == 'firefox':
+        #     chosen_browser = p.firefox
+        # else:
+        #     chosen_browser = p.chromium  # not a chrome/safari/firefox browser. default to chrome
+
+        # need chromiumSandbox=False because we are not a ROOT user
+        browser = chosen_browser.launch(chromiumSandbox=False)
         page = browser.newPage(deviceScaleFactor=device_scale_factor)
         page.setViewportSize(width=window_width, height=window_height)
         page.setContent(html)
