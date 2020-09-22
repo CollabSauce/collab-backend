@@ -213,10 +213,10 @@ if os.environ.get('ENVIRONMENT', 'development') == 'development':
 else:
     # default to smtp.EmailBackend (celery default anyways)
     EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
-    EMAIL_HOST = os.environ.get('MAILGUN_SMTP_SERVER', '')
-    EMAIL_PORT = os.environ.get('MAILGUN_SMTP_PORT', '')
-    EMAIL_HOST_USER = os.environ.get('MAILGUN_SMTP_LOGIN', '')
-    EMAIL_HOST_PASSWORD = os.environ.get('MAILGUN_SMTP_PASSWORD', '')
+    EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.zoho.com')
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+    EMAIL_PORT = os.environ.get('EMAIL_PORT', '587')
     email_tls = os.environ.get('EMAIL_USE_TLS', 'True')  # prod should be false
     email_ssl = os.environ.get('EMAIL_USE_SSL', 'False')  # prod should be true
 
