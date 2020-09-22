@@ -73,15 +73,15 @@ WORKDIR /app
 
 # Install dependencies
 # note:
-#	--no-interaction: not to ask any interactive questions
-# 	--no-ansi: flag to make your output more log friendly
+#   --no-interaction: not to ask any interactive questions
+#   --no-ansi: flag to make your output more log friendly
 COPY poetry.lock pyproject.toml /app/
 RUN pip install --no-cache-dir --upgrade pip \
-	&& pip install --no-cache-dir poetry==1.0.5 \
-	&& poetry config virtualenvs.create false \
- 	&& poetry install --no-interaction --no-ansi \
- 	&& pip uninstall --yes poetry \
- 	&& rm -rf ~/.config/pypoetry
+    && pip install --no-cache-dir poetry==1.0.5 \
+    && poetry config virtualenvs.create false \
+    && poetry install --no-interaction --no-ansi \
+    && pip uninstall --yes poetry \
+    && rm -rf ~/.config/pypoetry
 
 # more playwright
 RUN python -m playwright install
