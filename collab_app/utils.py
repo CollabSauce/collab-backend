@@ -1,8 +1,6 @@
-from django.core.mail.message import EmailMultiAlternatives
 from django.db import IntegrityError
 from django.db.utils import DataError
 from django.shortcuts import _get_queryset
-from django.utils.html import strip_tags
 
 from rest_framework import exceptions
 

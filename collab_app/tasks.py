@@ -4,8 +4,10 @@ import re
 import boto3
 from celery import shared_task
 from django.conf import settings
+from django.core.mail.message import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
+from django.utils.html import strip_tags
 from playwright import sync_playwright
 
 from collab_app.models import (
@@ -30,6 +32,7 @@ def create_screenshots_for_task(task_id, html, browser_name, device_scale_factor
 
     with sync_playwright() as p:
         lower_bname = browser_name.lower()
+        print(lower_bname)
         chosen_browser = p.chromium
 
         # FOR NOW JUST USE CHROME... bug with safari? firefox not rendering inputs?
