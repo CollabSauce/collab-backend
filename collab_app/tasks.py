@@ -13,14 +13,10 @@ from collab_app.models import (
     TaskComment,
     User
 )
-from collab_app.utils import (
-    send_email
-)
 
 
 @shared_task
 def create_screenshots_for_task(task_id, html, browser_name, device_scale_factor, window_width, window_height):
-    print('create_screenshots_for_task')
     task = Task.objects.get(id=task_id)
     project = task.project
     organization = project.organization
@@ -137,7 +133,7 @@ def notify_participants_of_task(task_id):
                 'task_creator_name': task_creator_name,
                 'task_url': f'https://app.collabsauce.com/projects/{task.project.id}/tasks/{task_id}'
             })
-            send_email(subject, body, 'info@collabsauce.com', [mentioned.email], fail_silently=True)
+            send_email.delay(subject, body, 'info@collabsauce.com', [mentioned.email], fail_silently=True)
         except Exception as err:
             print('Error while notifying on task create')
             print(err)
@@ -166,7 +162,7 @@ def notify_participants_of_task_comment(task_comment_id):
                 'taskcomment_creator_name': taskcomment_creator_name,
                 'task_url': f'https://app.collabsauce.com/projects/{project_id}/tasks/{task.id}'
             })
-            send_email(subject, body, 'info@collabsauce.com', [mentioned.email], fail_silently=True)
+            send_email.delay(subject, body, 'info@collabsauce.com', [mentioned.email], fail_silently=True)
             already_mentioned.add(mentioned)
         except Exception as err:
             print('Error while notifying on task comment create')
@@ -189,8 +185,33 @@ def notify_participants_of_task_comment(task_comment_id):
                     'taskcomment_creator_name': taskcomment_creator_name,
                     'task_url': f'https://app.collabsauce.com/projects/{project_id}/tasks/{task.id}'
                 })
-                send_email(subject, body, 'info@collabsauce.com', [user.email], fail_silently=True)
+                send_email.delay(subject, body, 'info@collabsauce.com', [user.email], fail_silently=True)
                 already_mentioned.add(user)
             except Exception as err:
                 print('Error while notifying on task comment notify all create')
                 print(err)
+
+
+def generate_email(subject, html_body, from_email, to_email, text_body='', cc=[], bcc=[], headers=None):
+    # attempt converting HTML (template) into text for fallback
+    if html_body and not text_body:
+        text_body = strip_tags(html_body)
+
+    email = EmailMultiAlternatives(
+        subject=subject, body=text_body, from_email=from_email,
+        to=to_email, cc=cc, bcc=bcc, headers=headers
+    )
+
+    if html_body:
+        email.attach_alternative(html_body, 'text/html')
+
+    return email
+
+
+@shared_task
+def send_email(
+    subject, html_body, from_email, to_email, text_body='', cc=[], bcc=[], headers=None, fail_silently=False
+):
+    to_email = list(to_email)
+    email = generate_email(subject, html_body, from_email, to_email, text_body, cc, bcc, headers)
+    email.send(fail_silently=fail_silently)

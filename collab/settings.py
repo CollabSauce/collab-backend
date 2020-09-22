@@ -61,7 +61,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',  # for dj_rest_auth
     'dj_rest_auth',
     'dj_rest_auth.registration',
-    'djcelery_email',
+    # 'djcelery_email',
     'django_extensions',
 ]
 
@@ -208,14 +208,21 @@ REST_FRAMEWORK = {
 # for browseable api, redirect to /api
 LOGIN_REDIRECT_URL = '/api'
 
+# # email config
+# EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
+# # uncomment if want to print to console
+# if os.environ.get('ENVIRONMENT', 'development') == 'development':
+#     CELERY_EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# else:
+#     # default to smtp.EmailBackend (celery default anyways)
+#     CELERY_EMAIL_BACKEND = os.environ.get('CELERY_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+
 # email config
-EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
-# uncomment if want to print to console
 if os.environ.get('ENVIRONMENT', 'development') == 'development':
-    CELERY_EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 else:
     # default to smtp.EmailBackend (celery default anyways)
-    CELERY_EMAIL_BACKEND = os.environ.get('CELERY_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+    EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
 
 # Celery
 CELERY_BROKER_URL = os.environ.get('CLOUDAMQP_URL', '')

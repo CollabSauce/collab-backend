@@ -2,7 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.template.loader import render_to_string
 
-from collab_app.utils import (
+from collab_app.tasks import (
     send_email
 )
 
@@ -27,7 +27,7 @@ def email_on_invite_change(sender, instance, created, **kwargs):
             'inviter_name': f'{inviter.first_name} {inviter.last_name}',
             'organization_name': organization_name
         })
-        send_email(subject, body, 'info@collabsauce.com', [invite.email], fail_silently=True)
+        send_email.delay(subject, body, 'info@collabsauce.com', [invite.email], fail_silently=True)
 
     # TODO: send emails on user acceptance?
     # elif state_changed and invite.state == invite.ACCEPTED:
@@ -37,7 +37,7 @@ def email_on_invite_change(sender, instance, created, **kwargs):
     #         'potential_player_email': invite.email,
     #         'league_name': invite.league.name
     #     })
-    #     send_email(subject, body, 'fakeemail@gmail.com', [invite.inviter.email], fail_silently=True)
+    #     send_email.delay(subject, body, 'fakeemail@gmail.com', [invite.inviter.email], fail_silently=True)
 
     #     # also send email to the user accepting the invite, welcoming them to the website
     #     subject = 'Welcome to WEBSITE_NAME!'
@@ -45,7 +45,7 @@ def email_on_invite_change(sender, instance, created, **kwargs):
     #         'unique_key': invite.potential_player.confirmed_email.key,
     #         'created': True
     #     })
-    #     send_email(subject, body, 'fakeemail@gmail.com', [invite.email], fail_silently=True)
+    #     send_email.delay(subject, body, 'fakeemail@gmail.com', [invite.email], fail_silently=True)
 
     # TODO: send emails on user denial?
     # elif state_changed and invite.state == invite.DENIED:
@@ -55,7 +55,7 @@ def email_on_invite_change(sender, instance, created, **kwargs):
     #         'potential_player_email': invite.email,
     #         'league_name': invite.league.name
     #     })
-    #     send_email(subject, body, 'fakeemail@gmail.com', [invite.inviter.email], fail_silently=True)
+    #     send_email.delay(subject, body, 'fakeemail@gmail.com', [invite.inviter.email], fail_silently=True)
 
     elif state_changed and invite.state == invite.InviteState.CANCELED:
         organization_name = invite.organization.name
@@ -65,4 +65,4 @@ def email_on_invite_change(sender, instance, created, **kwargs):
             'inviter_name': f'{inviter.first_name} {inviter.last_name}',
             'organization_name': organization_name
         })
-        send_email(subject, body, 'info@collabsauce.com', [invite.email], fail_silently=True)
+        send_email.delay(subject, body, 'info@collabsauce.com', [invite.email], fail_silently=True)
