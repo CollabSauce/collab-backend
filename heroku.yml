@@ -9,7 +9,7 @@ release:
 run:
   web:
     command:
-      - gunicorn collab.wsgi:application --bind 0.0.0.0:$PORT
+      - gunicorn collab.wsgi:application --bind 0.0.0.0:$PORT --log-file -
     image: web
   worker:
     command:

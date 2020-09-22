@@ -126,3 +126,10 @@ show-virtualenv-path:
 # rebuild the collab_backend_web container
 rebuild-collab-backend-web:
 	docker-compose build collab_backend_web
+
+# rebuild the collab_backend_worker container
+rebuild-collab-backend-worker:
+	docker-compose build collab_backend_worker
+
+# rebuild the web and worker image
+rebuild: rebuild-collab-backend-web rebuild-collab-backend-worker
