@@ -108,6 +108,7 @@ WSGI_APPLICATION = 'collab.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
+DATABASES = {}
 if os.environ.get('environment', 'developement') == 'development':
     DATABASES = {
         "default": {
