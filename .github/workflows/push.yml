@@ -1,14 +1,14 @@
 name: Docker Compose Actions Workflow
-on:
-  push:
-    branches:
-      - master
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@master
-      - name: Lint
-        run: docker-compose run --rm collab_backend_web flake8
-      - name: Test
-        run: docker-compose run --rm collab_backend_web pytest --ds=tests.settings -s tests/$(TEST)
+# on:
+#   push:
+#     branches:
+#       - master
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@master
+#       - name: Lint
+#         run: docker-compose run --rm collab_backend_web flake8
+#       - name: Test
+#         run: docker-compose run --rm collab_backend_web pytest --ds=tests.settings -s tests/$(TEST)
