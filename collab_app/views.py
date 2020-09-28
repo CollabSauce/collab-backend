@@ -333,6 +333,17 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
                 'You do not have access to this project.'
             )
 
+        assigned_to_id = task_request_data.get('assigned_to', None)
+        if assigned_to_id:
+            # make sure the assignee is part of this user's organization
+            if not Membership.objects.filter(
+                user_id=assigned_to_id,
+                organization__memberships__user=request.user
+            ).exists():
+                raise exceptions.ValidationError(
+                    'This member does not belong to your organization.'
+                )
+
         task_column = TaskColumn.objects.get(project_id=project_id, name=TaskColumn.TASK_COLUMN_RAW_TASK)
         next_number = Task.objects.filter(project_id=project_id).count() + 1
         last_task_in_column = Task.objects.filter(
@@ -346,6 +357,7 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
             order=last_task_in_column.order + 1 if last_task_in_column else 1,
             project_id=project_id,
             task_column=task_column,
+            assigned_to_id=assigned_to_id,
             creator=request.user,
             task_number=next_number
         )
@@ -383,6 +395,41 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
                 include_fields=TaskMetadataSerializer.Meta.deferred_fields).data
             },
             status=201
+        )
+
+    @action(detail=False, methods=['post'])
+    def update_assignee(self, request, *args, **kwargs):
+        assigned_to_id = request.data['assigned_to_id']
+        task_id = request.data['task_id']
+
+        # verify that the current user can update this task
+        if not Task.objects.filter(
+            id=task_id,
+            project__organization__memberships__user=request.user
+        ).exists():
+            raise exceptions.ValidationError(
+                'You do not have permission to update this task.'
+            )
+
+        # make sure the assignee is part of the current user's organization
+        if assigned_to_id:
+            if not Membership.objects.filter(
+                user_id=assigned_to_id,
+                organization__memberships__user=request.user
+            ).exists():
+                raise exceptions.ValidationError(
+                    'This member does not belong to your organization.'
+                )
+
+        task = Task.objects.get(id=task_id)
+        user = User.objects.get(id=assigned_to_id) if assigned_to_id else None
+        task.assigned_to = user
+        task.save()
+        return Response({
+            'task': TaskSerializer(
+                task,
+                include_fields=TaskSerializer.Meta.deferred_fields).data
+            }, status=200
         )
 
 

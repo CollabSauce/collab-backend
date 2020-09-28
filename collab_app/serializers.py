@@ -140,6 +140,8 @@ class TaskSerializer(ApiSerializer):
         name = 'task'
         fields = (
             'id',
+            'assigned_to',
+            'assigned_to_full_name',
             'description',
             'design_edits',
             'window_screenshot_url',
@@ -158,19 +160,30 @@ class TaskSerializer(ApiSerializer):
             'title',
         )
         deferred_fields = (
+            'assigned_to',
+            'assigned_to_full_name',
             'creator',
+            'creator_full_name',
             'project',
             'task_column',
             'task_comments',
             'task_metadata',
         )
 
+    assigned_to = DynamicRelationField('UserSerializer')
+    assigned_to_full_name = DynamicMethodField(requires=['assigned_to.'])
     creator = DynamicRelationField('UserSerializer')
     creator_full_name = DynamicMethodField(requires=['creator.'])
     project = DynamicRelationField('ProjectSerializer')
     task_column = DynamicRelationField('TaskColumnSerializer')
     task_comments = DynamicRelationField('TaskCommentSerializer', many=True)
     task_metadata = DynamicRelationField('TaskMetadataSerializer')
+
+    def get_assigned_to_full_name(self, task):
+        assigned_to = task.assigned_to
+        if assigned_to:
+            return f'{task.assigned_to.first_name} {task.assigned_to.last_name}'
+        return ''
 
     def get_creator_full_name(self, task):
         return f'{task.creator.first_name} {task.creator.last_name}'

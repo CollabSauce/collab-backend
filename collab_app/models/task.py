@@ -36,6 +36,15 @@ class Task(BaseModel):
         on_delete=models.PROTECT
     )
 
+    # Should I make this assigned to a Membership instead?
+    assigned_to = models.ForeignKey(
+        'collab_app.User',
+        related_name='assigned_tasks',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['task_number', 'project'], name='unique_tasknumber_project'),

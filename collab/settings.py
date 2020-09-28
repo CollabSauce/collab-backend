@@ -79,6 +79,10 @@ MIDDLEWARE = [
 # Debug ToolBar leaks memory by way of storing lots of information about all requests in memory. Forever.
 # Never turn this on in production.
 if DEBUG:
+    # first IP always works on 127.0.0.1. Second IP is so doing `localhost:8000` works too.
+    # To get this second IP, do :  docker inspect collab_backend_web | grep -e '"Gateway"' .
+    # Get the value of that IP and put it in the second element of the below list
+    INTERNAL_IPS = ['127.0.0.1', '172.23.0.1']
     INSTALLED_APPS.append('debug_toolbar')
     MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
     DEBUG_TOOLBAR_CONFIG = {

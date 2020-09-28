@@ -125,18 +125,39 @@ def notify_participants_of_task(task_id):
     task = Task.objects.get(id=task_id)
     task_creator_name = f'{task.creator.first_name} {task.creator.last_name}'
 
+    already_mentioned = set()
+
+    # Notify the person assigned on the task (if applicable)
+    assignee = task.assigned_to
+    if assignee:
+        try:
+            subject = f'{task_creator_name} has assigned you a task.'
+            body = render_to_string('emails/tasks/task-assigned.html', {
+                'task_creator_name': task_creator_name,
+                'task_url': f'https://staging-collab-dashboard.netlify.app/projects/{task.project.id}/tasks/{task_id}'
+            })
+            send_email.delay(subject, body, settings.EMAIL_HOST_USER, [mentioned.email], fail_silently=False)
+            already_mentioned.add(assignee)
+        except Exception as err:
+            print('Error while notifying assignee on task create')
+            print(err)
+
     # match the id from `@@@__<ID HERE>^^^Some Name@@@^^^`
+
+    # Notify the people mentioned on the comment.
     regex = r'@@@__(\d+)\^\^\^'
     matches = re.findall(regex, task.title)
     for user_id in matches:
         try:
             mentioned = User.objects.get(id=user_id)
-            subject = f'{task_creator_name} has mentioned you on a task.'
-            body = render_to_string('emails/tasks/task-mention.html', {
-                'task_creator_name': task_creator_name,
-                'task_url': f'https://staging-collab-dashboard.netlify.app/projects/{task.project.id}/tasks/{task_id}'
-            })
-            send_email.delay(subject, body, settings.EMAIL_HOST_USER, [mentioned.email], fail_silently=False)
+            if mentioned not in already_mentioned:
+                subject = f'{task_creator_name} has mentioned you on a task.'
+                body = render_to_string('emails/tasks/task-mention.html', {
+                    'task_creator_name': task_creator_name,
+                    'task_url': f'https://staging-collab-dashboard.netlify.app/projects/{task.project.id}/tasks/{task_id}'
+                })
+                send_email.delay(subject, body, settings.EMAIL_HOST_USER, [mentioned.email], fail_silently=False)
+                already_mentioned.add(mentioned)
         except Exception as err:
             print('Error while notifying on task create')
             print(err)
@@ -171,8 +192,10 @@ def notify_participants_of_task_comment(task_comment_id):
             print('Error while notifying on task comment create')
             print(err)
 
+    # notify the task creator and task.assigned_to . If they are the same person, logic below already handles duplicates
+    users_to_notify = [task.creator, task.assigned_to]
+
     # Now notify everyone who is 'participating' on the task chain
-    users_to_notify = [task.creator]  # notify the task creator
     for comment in task.task_comments.all():
         users_to_notify.append(comment.creator)  # notify the task-comment creator
         matches = re.findall(regex, comment.text)
