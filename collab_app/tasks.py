@@ -218,6 +218,7 @@ def notify_participants_of_task_comment(task_comment_id):
                 print('Error while notifying on task comment notify all create')
                 print(err)
 
+
 @shared_task
 def notify_participants_of_assignee_change(task_id):
     # TODO: notify original_assignee (if there was one) that they are unassigned??
@@ -225,7 +226,7 @@ def notify_participants_of_assignee_change(task_id):
 
     assignee = task.assigned_to
     try:
-        subject = f'You have been assigned a task!'
+        subject = 'You have been assigned a task!'
         body = render_to_string('emails/tasks/task-assigned-changed.html', {
             'task_url': f'https://staging-collab-dashboard.netlify.app/projects/{task.project.id}/tasks/{task_id}'
         })
@@ -233,6 +234,7 @@ def notify_participants_of_assignee_change(task_id):
     except Exception as err:
         print('Error while notifying assignee on task update')
         print(err)
+
 
 def generate_email(subject, html_body, from_email, to_email, text_body='', cc=[], bcc=[], headers=None):
     # attempt converting HTML (template) into text for fallback
