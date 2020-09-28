@@ -124,6 +124,7 @@ def create_screenshots_for_task(task_id, html, browser_name, device_scale_factor
 def notify_participants_of_task(task_id):
     task = Task.objects.get(id=task_id)
     task_creator_name = f'{task.creator.first_name} {task.creator.last_name}'
+    project_id = task.project.id
 
     already_mentioned = set()
 
@@ -134,9 +135,9 @@ def notify_participants_of_task(task_id):
             subject = f'{task_creator_name} has assigned you a task.'
             body = render_to_string('emails/tasks/task-assigned.html', {
                 'task_creator_name': task_creator_name,
-                'task_url': f'https://staging-collab-dashboard.netlify.app/projects/{task.project.id}/tasks/{task_id}'
+                'task_url': f'https://staging-collab-dashboard.netlify.app/projects/{project_id}/tasks/{task_id}'
             })
-            send_email.delay(subject, body, settings.EMAIL_HOST_USER, [mentioned.email], fail_silently=False)
+            send_email.delay(subject, body, settings.EMAIL_HOST_USER, [assignee.email], fail_silently=False)
             already_mentioned.add(assignee)
         except Exception as err:
             print('Error while notifying assignee on task create')
@@ -154,7 +155,7 @@ def notify_participants_of_task(task_id):
                 subject = f'{task_creator_name} has mentioned you on a task.'
                 body = render_to_string('emails/tasks/task-mention.html', {
                     'task_creator_name': task_creator_name,
-                    'task_url': f'https://staging-collab-dashboard.netlify.app/projects/{task.project.id}/tasks/{task_id}'
+                    'task_url': f'https://staging-collab-dashboard.netlify.app/projects/{project_id}/tasks/{task_id}'
                 })
                 send_email.delay(subject, body, settings.EMAIL_HOST_USER, [mentioned.email], fail_silently=False)
                 already_mentioned.add(mentioned)
@@ -217,6 +218,21 @@ def notify_participants_of_task_comment(task_comment_id):
                 print('Error while notifying on task comment notify all create')
                 print(err)
 
+@shared_task
+def notify_participants_of_assignee_change(task_id):
+    # TODO: notify original_assignee (if there was one) that they are unassigned??
+    task = Task.objects.get(id=task_id)
+
+    assignee = task.assigned_to
+    try:
+        subject = f'You have been assigned a task!'
+        body = render_to_string('emails/tasks/task-assigned-changed.html', {
+            'task_url': f'https://staging-collab-dashboard.netlify.app/projects/{task.project.id}/tasks/{task_id}'
+        })
+        send_email.delay(subject, body, settings.EMAIL_HOST_USER, [assignee.email], fail_silently=False)
+    except Exception as err:
+        print('Error while notifying assignee on task update')
+        print(err)
 
 def generate_email(subject, html_body, from_email, to_email, text_body='', cc=[], bcc=[], headers=None):
     # attempt converting HTML (template) into text for fallback
