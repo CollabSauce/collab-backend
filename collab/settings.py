@@ -181,6 +181,8 @@ ACCOUNT_ADAPTER = 'collab_app.auth.adapters.AuthAccountAdapter'  # overwrite a m
 ACCOUNT_EMAIL_REQUIRED = True  # we are logging in/signing up through email, so this needs to be True
 ACCOUNT_USERNAME_REQUIRED = False  # username not required
 ACCOUNT_AUTHENTICATION_METHOD = 'email'  # we login/signup through email
+# ACCOUNT_USER_DISPLAY = 'collab_app.utils.account_user_display'  # used in email templates
+ACCOUNT_USER_DISPLAY = lambda user: user.get_full_name()  # used in email templates. used as `user_display` in emails
 
 
 # For dj-rest-auth
@@ -278,3 +280,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 #######
 # End For heroku
 #######
+
+
+ENVIRONMENT = os.environ.get('ENVIRONMENT', '')

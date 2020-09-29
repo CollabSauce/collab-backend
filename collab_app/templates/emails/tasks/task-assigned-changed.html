@@ -1,5 +1,6 @@
+{% load dashboard_url %}
 <p>
     Hello!<br><br>
-    You have been assigned a task. Check out the task here: <a href="{{task_url}}">{{task_url}}</a>
+    You have been assigned a task. Check out the task here: <a href="{% dashboard_url %}/{{task_url}}">{% dashboard_url %}/{{task_url}}</a>
     <br><br>
 </p>

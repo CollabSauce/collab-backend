@@ -20,7 +20,7 @@ def email_on_invite_change(sender, instance, created, **kwargs):
 
     if created:
         organization_name = invite.organization.name
-        subject = f'You have been invited to join {organization_name} organization on Collabsauce!'
+        subject = f'You have been invited to join {organization_name} organization on Collab Sauce!'
         inviter = invite.inviter
         body = render_to_string('emails/invites/created.html', {
             'email': invite.email,

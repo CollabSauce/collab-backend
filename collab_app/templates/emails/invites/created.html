@@ -1,5 +1,6 @@
+{% load dashboard_url %}
 <p>
     Hello!<br><br>
     {{ inviter_name }} has invited you to the organization {{ organization_name }}.<br><br>
-    Please go to <a href="https://staging-collab-dashboard.netlify.app/accept_invite?email={{ email }}&key={{ key }}">https://staging-collab-dashboard.netlify.app/accept_invite?email={{ email }}&key={{ key }}</a> to sign up and accept the invitation.
+    Please go to <a href="{% dashboard_url %}/accept_invite?email={{ email }}&key={{ key }}">{% dashboard_url %}/accept_invite?email={{ email }}&key={{ key }}</a> to sign up and accept the invitation.
 </p>

@@ -135,7 +135,7 @@ def notify_participants_of_task(task_id):
             subject = f'{task_creator_name} has assigned you a task.'
             body = render_to_string('emails/tasks/task-assigned.html', {
                 'task_creator_name': task_creator_name,
-                'task_url': f'https://staging-collab-dashboard.netlify.app/projects/{project_id}/tasks/{task_id}'
+                'task_url': f'projects/{project_id}/tasks/{task_id}'
             })
             send_email.delay(subject, body, settings.EMAIL_HOST_USER, [assignee.email], fail_silently=False)
             already_mentioned.add(assignee)
@@ -155,7 +155,7 @@ def notify_participants_of_task(task_id):
                 subject = f'{task_creator_name} has mentioned you on a task.'
                 body = render_to_string('emails/tasks/task-mention.html', {
                     'task_creator_name': task_creator_name,
-                    'task_url': f'https://staging-collab-dashboard.netlify.app/projects/{project_id}/tasks/{task_id}'
+                    'task_url': f'projects/{project_id}/tasks/{task_id}'
                 })
                 send_email.delay(subject, body, settings.EMAIL_HOST_USER, [mentioned.email], fail_silently=False)
                 already_mentioned.add(mentioned)
@@ -185,7 +185,7 @@ def notify_participants_of_task_comment(task_comment_id):
             subject = f'{taskcomment_creator_name} has mentioned you on a task.'
             body = render_to_string('emails/tasks/taskcomment-mention.html', {
                 'taskcomment_creator_name': taskcomment_creator_name,
-                'task_url': f'https://staging-collab-dashboard.netlify.app/projects/{project_id}/tasks/{task.id}'
+                'task_url': f'projects/{project_id}/tasks/{task.id}'
             })
             send_email.delay(subject, body, settings.EMAIL_HOST_USER, [mentioned.email], fail_silently=False)
             already_mentioned.add(mentioned)
@@ -210,7 +210,7 @@ def notify_participants_of_task_comment(task_comment_id):
                 subject = f'{taskcomment_creator_name} has commented on a task you are participating on.'
                 body = render_to_string('emails/tasks/taskcomment-participating.html', {
                     'taskcomment_creator_name': taskcomment_creator_name,
-                    'task_url': f'https://staging-collab-dashboard.netlify.app/projects/{project_id}/tasks/{task.id}'
+                    'task_url': f'projects/{project_id}/tasks/{task.id}'
                 })
                 send_email.delay(subject, body, settings.EMAIL_HOST_USER, [user.email], fail_silently=False)
                 already_mentioned.add(user)
@@ -228,7 +228,7 @@ def notify_participants_of_assignee_change(task_id):
     try:
         subject = 'You have been assigned a task!'
         body = render_to_string('emails/tasks/task-assigned-changed.html', {
-            'task_url': f'https://staging-collab-dashboard.netlify.app/projects/{task.project.id}/tasks/{task_id}'
+            'task_url': f'projects/{task.project.id}/tasks/{task_id}'
         })
         send_email.delay(subject, body, settings.EMAIL_HOST_USER, [assignee.email], fail_silently=False)
     except Exception as err:

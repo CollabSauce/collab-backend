@@ -1,5 +1,6 @@
+{% load dashboard_url %}
 <p>
     Hello!<br><br>
-    {{ taskcomment_creator_name }} has commented on a task you are participating on. Check out the comment here: <a href="{{task_url}}">{{task_url}}</a>
+    {{ taskcomment_creator_name }} has commented on a task you are participating on. Check out the comment here: <a href="{% dashboard_url %}/{{task_url}}">{% dashboard_url %}/{{task_url}}</a>
     <br><br>
 </p>
