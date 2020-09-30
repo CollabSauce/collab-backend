@@ -46,9 +46,10 @@ def create_screenshots_for_task(task_id, html, browser_name, device_scale_factor
         #     chosen_browser = p.chromium  # not a chrome/safari/firefox browser. default to chrome
 
         # need chromiumSandbox=False because we are not a ROOT user
+        # See this answer: https://stackoverflow.com/a/50107359/9711626 for `args` arguments.
         browser = chosen_browser.launch(chromiumSandbox=False, args=[
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
+            # '--no-sandbox',
+            # '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
             '--single-process'
         ])
@@ -87,23 +88,23 @@ def create_screenshots_for_task(task_id, html, browser_name, device_scale_factor
                 el.href = el.getAttribute('collabsauce-href');
             });
         }''')
-        page.screenshot(path=window_screenshot_filepath, type='png')
+        # page.screenshot(path=window_screenshot_filepath, type='png')
         element = page.querySelector('[data-collab-selected-element]')
         element.screenshot(path=element_screenshot_filepath, type='png')
         browser.close()
 
     s3 = boto3.resource('s3')
     s3_bucket = getattr(settings, 'S3_BUCKET')
-    window_file_name = f'{organization.id}/{project.id}/{file_key}-window.png'
+    # window_file_name = f'{organization.id}/{project.id}/{file_key}-window.png'
     element_file_name = f'{organization.id}/{project.id}/{file_key}-element.png'
-    s3.meta.client.upload_file(
-        Filename=window_screenshot_filepath,
-        Bucket=s3_bucket,
-        Key=window_file_name,
-        ExtraArgs={
-            'ContentType': 'image/png'
-        }
-    )
+    # s3.meta.client.upload_file(
+    #     Filename=window_screenshot_filepath,
+    #     Bucket=s3_bucket,
+    #     Key=window_file_name,
+    #     ExtraArgs={
+    #         'ContentType': 'image/png'
+    #     }
+    # )
     s3.meta.client.upload_file(
         Filename=element_screenshot_filepath,
         Bucket=s3_bucket,
@@ -120,7 +121,7 @@ def create_screenshots_for_task(task_id, html, browser_name, device_scale_factor
         print('Error while deleting files')
         print(err)
 
-    task.window_screenshot_url = f'https://s3-us-west-1.amazonaws.com/{s3_bucket}/{window_file_name}'
+    # task.window_screenshot_url = f'https://s3-us-west-1.amazonaws.com/{s3_bucket}/{window_file_name}'
     task.element_screenshot_url = f'https://s3-us-west-1.amazonaws.com/{s3_bucket}/{element_file_name}'
     task.save()
 

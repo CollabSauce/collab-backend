@@ -133,3 +133,18 @@ rebuild-collab-backend-worker:
 
 # rebuild the web and worker image
 rebuild: rebuild-collab-backend-web rebuild-collab-backend-worker
+
+# start the celery worker on heroku
+# heroku_start_worker:
+# 	$(call header,"heroku_start_worker")
+# 	$(shell heroku ps:scale worker=$(WORKERS))
+
+# # stop the celery worker on heroku
+# heroku_stop_worker:
+# 	$(call header,"heroku_stop_worker")
+# 	$(shell heroku ps:scale worker=0)
+
+# heroku_worker_logs:
+# 	$(call header,"heroku_worker_logs")
+# 	$(shell heroku logs -t --dyno=worker)
+# 	# $(shell heroku logs -t -p worker)
