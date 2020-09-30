@@ -46,7 +46,12 @@ def create_screenshots_for_task(task_id, html, browser_name, device_scale_factor
         #     chosen_browser = p.chromium  # not a chrome/safari/firefox browser. default to chrome
 
         # need chromiumSandbox=False because we are not a ROOT user
-        browser = chosen_browser.launch(chromiumSandbox=False)
+        browser = chosen_browser.launch(chromiumSandbox=False, args=[
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--single-process'
+        ])
         page = browser.newPage(deviceScaleFactor=device_scale_factor)
         page.setViewportSize(width=window_width, height=window_height)
         page.setContent(html)
