@@ -55,6 +55,9 @@ RUN cd /tmp && \
     make && \
     make install
 
+# Needed for pyrcurl (which celery-sqs uses under the hood)
+RUN apt-get install -y libcurl4-openssl-dev libssl-dev
+
 
 # Add directory in which libjpeg was built to the search path
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
