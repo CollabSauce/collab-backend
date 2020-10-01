@@ -3,7 +3,7 @@ from collab_app.models.membership import Membership
 from collab_app.models.organization import Organization
 from collab_app.models.profile import Profile
 from collab_app.models.project import Project
-from collab_app.models.task import (Task, TaskColumn, TaskMetadata, TaskComment)
+from collab_app.models.task import (Task, TaskColumn, TaskMetadata, TaskComment, TaskHtml)
 from collab_app.models.user import User
 
 # import signals so django registers them
@@ -27,6 +27,7 @@ __all__ = [
     'TaskColumn',
     'TaskMetadata',
     'TaskComment',
+    'TaskHtml',
     'User',
     'create_profile_on_user_create',
     'email_on_invite_change',

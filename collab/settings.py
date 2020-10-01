@@ -14,7 +14,7 @@ import os
 
 from corsheaders.defaults import default_headers
 from django.core.management.utils import get_random_secret_key
-import dj_database_url
+# import dj_database_url
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,11 +27,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEBUG = int(os.environ.get("DEBUG", default=0))
 
 # SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.environ.get('SECRET_KEY', default='87r&i3cwg$ky)s!zvq(ruj#a24r6ly5rhbs!=#8(^*=1-6^kv(')
 #  Weird `default` logic needed for heroku :/ . https://stackoverflow.com/a/62102995/9711626
-SECRET_KEY = os.environ.get(
-    'SECRET_KEY',
-    default='87r&i3cwg$ky)s!zvq(ruj#a24r6ly5rhbs!=#8(^*=1-6^kv(' if DEBUG else get_random_secret_key()
-)
+    # default='87r&i3cwg$ky)s!zvq(ruj#a24r6ly5rhbs!=#8(^*=1-6^kv(' if DEBUG else get_random_secret_key()
+# )
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(" ")
 
@@ -113,24 +112,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'collab.wsgi.application'
 
+ENVIRONMENT = os.environ.get('ENVIRONMENT', 'development')
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-DATABASES = {}
-if os.environ.get('ENVIRONMENT', 'development') == 'development':
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.environ.get("POSTGRES_DB"),
-            "USER": os.environ.get("POSTGRES_USER"),
-            "HOST": os.environ.get("POSTGRES_HOST"),
-            "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
-            "PORT": os.environ.get("POSTGRES_PORT"),
-        }
+# DATABASES = {}
+# if ENVIRONMENT == 'development':
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("POSTGRES_DB"),
+        "USER": os.environ.get("POSTGRES_USER"),
+        "HOST": os.environ.get("POSTGRES_HOST"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
+        "PORT": os.environ.get("POSTGRES_PORT"),
     }
-else:
-    # uses the DATABASE_URL env var
-    DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
+}
+# else:
+#     # uses the DATABASE_URL env var
+#     DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -237,9 +237,21 @@ else:
     elif email_ssl == 'False':
         EMAIL_USE_SSL = False
 
+
+# AWS_CREDS (used for celery)
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
+
 # Celery
-CELERY_BROKER_URL = os.environ.get('CLOUDAMQP_URL', '')
-CELERY_BROKER_POOL_LIMIT = 1  # for now on free cloudamqp tier (heroku) (can increase later if needed)
+# CELERY_BROKER_POOL_LIMIT = 1  # for now on free cloudamqp tier (heroku) (can increase later if needed)
+if ENVIRONMENT == 'development':
+    CELERY_BROKER_URL = os.environ.get('CLOUDAMQP_URL', '')
+else:
+    CELERY_BROKER_URL = f'sqs://{AWS_ACCESS_KEY_ID}:{AWS_SECRET_ACCESS_KEY}@'
+    CELERY_DEFAULT_QUEUE = os.environ.get('CELERY_DEFAULT_QUEUE', 'collab-staging')
+    CELERY_BROKER_TRANSPORT_OPTIONS = {
+        'region': os.getenv('AWS_REGION','us-west-2')
+    }
 
 # CORS
 # TODO(BRANDON) Fix for dev/stage/prod
@@ -263,6 +275,7 @@ S3_BUCKET = os.environ.get(
 
 #######
 # For heroku:
+# For deployment environment:
 #######
 # PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
@@ -279,7 +292,5 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 #######
 # End For heroku
+# End For deployment environment
 #######
-
-
-ENVIRONMENT = os.environ.get('ENVIRONMENT', '')

@@ -13,13 +13,16 @@ from playwright import sync_playwright
 from collab_app.models import (
     Task,
     TaskComment,
+    TaskHtml,
     User
 )
 
 
 @shared_task
-def create_screenshots_for_task(task_id, html, browser_name, device_scale_factor, window_width, window_height):
+def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scale_factor, window_width, window_height):
     task = Task.objects.get(id=task_id)
+    task_html = TaskHtml.objects.get(id=task_html_id)
+    html = task_html.html
     project = task.project
     organization = project.organization
 
@@ -32,7 +35,6 @@ def create_screenshots_for_task(task_id, html, browser_name, device_scale_factor
 
     with sync_playwright() as p:
         lower_bname = browser_name.lower()
-        print(lower_bname)
         chosen_browser = p.chromium
 
         # FOR NOW JUST USE CHROME... bug with safari? firefox not rendering inputs?
@@ -47,12 +49,13 @@ def create_screenshots_for_task(task_id, html, browser_name, device_scale_factor
 
         # need chromiumSandbox=False because we are not a ROOT user
         # See this answer: https://stackoverflow.com/a/50107359/9711626 for `args` arguments.
-        browser = chosen_browser.launch(chromiumSandbox=False, args=[
-            # '--no-sandbox',
-            # '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--single-process'
-        ])
+        browser = chosen_browser.launch(chromiumSandbox=False)
+        # browser = chosen_browser.launch(chromiumSandbox=False, args=[
+        #     # '--no-sandbox',
+        #     # '--disable-setuid-sandbox',
+        #     '--disable-dev-shm-usage',
+        #     '--single-process'
+        # ])
         page = browser.newPage(deviceScaleFactor=device_scale_factor)
         page.setViewportSize(width=window_width, height=window_height)
         page.setContent(html)
@@ -88,23 +91,23 @@ def create_screenshots_for_task(task_id, html, browser_name, device_scale_factor
                 el.href = el.getAttribute('collabsauce-href');
             });
         }''')
-        # page.screenshot(path=window_screenshot_filepath, type='png')
+        page.screenshot(path=window_screenshot_filepath, type='png')
         element = page.querySelector('[data-collab-selected-element]')
         element.screenshot(path=element_screenshot_filepath, type='png')
         browser.close()
 
     s3 = boto3.resource('s3')
     s3_bucket = getattr(settings, 'S3_BUCKET')
-    # window_file_name = f'{organization.id}/{project.id}/{file_key}-window.png'
+    window_file_name = f'{organization.id}/{project.id}/{file_key}-window.png'
     element_file_name = f'{organization.id}/{project.id}/{file_key}-element.png'
-    # s3.meta.client.upload_file(
-    #     Filename=window_screenshot_filepath,
-    #     Bucket=s3_bucket,
-    #     Key=window_file_name,
-    #     ExtraArgs={
-    #         'ContentType': 'image/png'
-    #     }
-    # )
+    s3.meta.client.upload_file(
+        Filename=window_screenshot_filepath,
+        Bucket=s3_bucket,
+        Key=window_file_name,
+        ExtraArgs={
+            'ContentType': 'image/png'
+        }
+    )
     s3.meta.client.upload_file(
         Filename=element_screenshot_filepath,
         Bucket=s3_bucket,
@@ -121,9 +124,10 @@ def create_screenshots_for_task(task_id, html, browser_name, device_scale_factor
         print('Error while deleting files')
         print(err)
 
-    # task.window_screenshot_url = f'https://s3-us-west-1.amazonaws.com/{s3_bucket}/{window_file_name}'
+    task.window_screenshot_url = f'https://s3-us-west-1.amazonaws.com/{s3_bucket}/{window_file_name}'
     task.element_screenshot_url = f'https://s3-us-west-1.amazonaws.com/{s3_bucket}/{element_file_name}'
     task.save()
+    task_html.delete()
 
 
 @shared_task

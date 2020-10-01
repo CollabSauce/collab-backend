@@ -125,14 +125,31 @@ show-virtualenv-path:
 
 # rebuild the collab_backend_web container
 rebuild-collab-backend-web:
-	docker-compose build collab_backend_web
+	docker-compose -f ${YML_FILE} build collab_backend_web
 
 # rebuild the collab_backend_worker container
 rebuild-collab-backend-worker:
-	docker-compose build collab_backend_worker
+	docker-compose -f ${YML_FILE} build collab_backend_worker
+
+rebuild-image: rebuild-collab-backend-web rebuild-collab-backend-worker
 
 # rebuild the web and worker image
-rebuild: rebuild-collab-backend-web rebuild-collab-backend-worker
+rebuild: YML_FILE=docker-compose.yml
+rebuild: rebuild-image
+
+# push docker tag to aws ecr
+ecr-push: rebuild-image
+	$(call header,"Building tagging and pushing image to ecr")
+	docker tag collab-backend_collab_backend_web 759511149347.dkr.ecr.us-west-2.amazonaws.com/collabsauce-registry:${TAG_NAME}
+	docker push 759511149347.dkr.ecr.us-west-2.amazonaws.com/collabsauce-registry:${TAG_NAME}
+
+# staging tag and push
+ecr-push-staging: YML_FILE=docker-compose.staging.yml
+ecr-push-staging: TAG_NAME=staging-latest
+ecr-push-staging: ecr-push
+
+# prod tag and push
+# ecr-push-prod:
 
 # start the celery worker on heroku
 # heroku_start_worker:

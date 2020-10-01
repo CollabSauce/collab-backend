@@ -1,0 +1,28 @@
+version: '3.7'
+
+services:
+  collab_backend_web:
+    container_name: collab_backend_web
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["/app/docker/staging-entrypoint.sh"]
+    command: bash -c "
+        python manage.py collectstatic --noinput &&
+        python manage.py migrate &&
+        gunicorn collab.wsgi:application --bind 0.0.0.0:8000 --log-file -"
+    ports:
+      - 8000:8000
+    env_file:
+      - ./.env.staging
+
+  collab_backend_worker:
+    container_name: collab_backend_worker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["/app/docker/staging-entrypoint.sh"]
+    command: celery -A collab worker -l info
+    env_file:
+      - ./.env.staging
+

@@ -108,3 +108,16 @@ class TaskComment(BaseModel):
         related_name='created_task_comments',
         on_delete=models.PROTECT
     )
+
+
+# sqs can only send 256kb of data. The HTML might be larger than 256kb. Therefore, save
+# that html data in this model temporarily, so that the asynchronous task can just
+# get html from this model.
+class TaskHtml(BaseModel):
+    task = models.ForeignKey(
+        'collab_app.Task',
+        related_name='task_htmls',
+        on_delete=models.CASCADE
+    )
+
+    html = models.TextField(default='')

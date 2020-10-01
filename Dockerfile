@@ -105,4 +105,4 @@ RUN cp collab_app/hack/playwright/main.py /usr/local/lib/python3.7/site-packages
 USER myuser
 
 # needed for heroku :/ . https://stackoverflow.com/a/62102995/9711626
-RUN python manage.py collectstatic --noinput
+# RUN python manage.py collectstatic --noinput

@@ -65,3 +65,15 @@ Quick docker tips:
         * (Now in the db container): `psql -d <POSTGRES_DB> -U <POSTGRES_USER> -p <POSTGRES_PORT>` and then enter the `<POSTGRES_PASSWORD>` when prompted.
     * Alternatively, we are mapping the port on your host (5432) to the conatiner's port (5432). Therefore, is you have the psql client locally, you can just do:
         * `psql -h localhost -p 5432 -d <POSTGRES_DB> -U <POSTGRES_USER>` and then enter the `<POSTGRES_PASSWORD>` when prompted.
+
+
+### Deploying
+History:
+* running aws lightsail
+* Created an ubuntu instance. Added docker to the instance [see here](https://gist.githubusercontent.com/JoshuaTheMiller/c8203dfd4c9b423401d52692222b499b/raw/11af365faa618db4e797a04ce0495d1bf60c4da7/medium_LightsailAndDocker_Blob.sh) ((which came from here)[https://medium.com/@JoshuaTheMiller/creating-a-simple-website-with-a-custom-domain-on-amazon-lightsail-docker-86600f19273])
+* Then added aws-cli
+* Also added docker-compose https://docs.docker.com/compose/install/#install-compose-on-linux-systems
+* created a snapshot of that instance. This is the base image for the web and worker instances
+
+Steps:
+* `ecr-push-staging` This does a full image build of the web instance. Then it tags and pushes the image to our aws ecr repo.

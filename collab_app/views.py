@@ -25,6 +25,7 @@ from collab_app.models import (
     Task,
     TaskColumn,
     TaskComment,
+    TaskHtml,
     TaskMetadata,
     User,
 )
@@ -384,7 +385,8 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
         device_scale_factor = task_metadata.device_pixel_ratio
         window_width = task_metadata.browser_window_width
         window_height = task_metadata.browser_window_height
-        create_screenshots_for_task.delay(task_id, html, browser_name, device_scale_factor, window_width, window_height)
+        task_html = TaskHtml.objects.create(task=task, html=html)
+        create_screenshots_for_task.delay(task_id, task_html.id, browser_name, device_scale_factor, window_width, window_height)
 
         return Response({
             'task': TaskSerializer(
