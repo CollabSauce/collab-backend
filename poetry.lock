@@ -664,6 +664,14 @@ version = "2.6.0"
 
 [[package]]
 category = "main"
+description = "PycURL -- A Python Interface To The cURL library"
+name = "pycurl"
+optional = false
+python-versions = ">=3.5"
+version = "7.43.0.6"
+
+[[package]]
+category = "main"
 description = "A port of node.js's EventEmitter to python."
 name = "pyee"
 optional = false
@@ -941,7 +949,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "8041aa78125119f0873893be82195cefec7ddbed7a242cc66ea01a2b611d854c"
+content-hash = "a33cfc86666b2183c67e4f0dc3b45953a1bc59fed269d4df6ad142ef62e35a56"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -1199,6 +1207,9 @@ py = [
 pycodestyle = [
     {file = "pycodestyle-2.6.0-py2.py3-none-any.whl", hash = "sha256:2295e7b2f6b5bd100585ebcb1f616591b652db8a741695b3d8f5d28bdc934367"},
     {file = "pycodestyle-2.6.0.tar.gz", hash = "sha256:c58a7d2815e0e8d7972bf1803331fb0152f867bd89adf8a01dfd55085434192e"},
+]
+pycurl = [
+    {file = "pycurl-7.43.0.6.tar.gz", hash = "sha256:8301518689daefa53726b59ded6b48f33751c383cf987b0ccfbbc4ed40281325"},
 ]
 pyee = [
     {file = "pyee-8.0.1-py2.py3-none-any.whl", hash = "sha256:96b71093029f17bf92709c4538a2501449bde261722021815b74040c6b7440bd"},
