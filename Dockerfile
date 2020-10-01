@@ -83,8 +83,6 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip uninstall --yes poetry \
     && rm -rf ~/.config/pypoetry
 
-RUN pip install playwright==0.140.0
-
 # NON-root user. mimics heroku
 RUN useradd -m myuser
 USER myuser

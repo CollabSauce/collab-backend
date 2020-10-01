@@ -19,6 +19,7 @@ redis = "^3.5.3"
 boto3 = "^1.14.56"
 whitenoise = "^5.2.0"
 gunicorn = "^20.0.4"
+playwright = "^0.142.1"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.8.3"
