@@ -141,8 +141,11 @@ rebuild: rebuild-image
 rebuild-staging: YML_FILE=docker-compose.staging.yml
 rebuild-staging: rebuild-image
 
-run-staging:
-	docker-compose -f docker-compose.staging.yml up collab_backend_web
+run-staging-web:
+	docker-compose -f docker-compose.staging.yml up -d collab_backend_web
+
+run-staging-worker:
+	docker-compose -f docker-compose.staging.yml up -d collab_backend_worker
 
 # push docker tag to aws ecr
 # ecr-push: rebuild-image
