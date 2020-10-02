@@ -49,13 +49,13 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
 
         # need chromiumSandbox=False because we are not a ROOT user
         # See this answer: https://stackoverflow.com/a/50107359/9711626 for `args` arguments.
-        # browser = chosen_browser.launch(chromiumSandbox=False)
-        browser = chosen_browser.launch(chromiumSandbox=False, args=[
-            # '--no-sandbox',
-            # '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--single-process'
-        ])
+        browser = chosen_browser.launch(chromiumSandbox=False)
+        # browser = chosen_browser.launch(chromiumSandbox=False, args=[
+        #     # '--no-sandbox',
+        #     # '--disable-setuid-sandbox',
+        #     '--disable-dev-shm-usage',
+        #     '--single-process'
+        # ])
         page = browser.newPage(deviceScaleFactor=device_scale_factor)
         page.setViewportSize(width=window_width, height=window_height)
         page.setContent(html)
