@@ -78,10 +78,14 @@ Steps:
 * In the ec2 instance from running celery:
     * same as above but instead of `make run-staging-web`, run `make run-staging-worker`
 
+Use shell in staging environment:
+    * In an ec2 instance (say the web instance): `docker exec -it collab_backend_web bash` and then `python manage.py shell_plus --ipython`
+
 History:
 * running aws lightsail
 * Created an ubuntu instance. Added docker to the instance [see here](https://gist.githubusercontent.com/JoshuaTheMiller/c8203dfd4c9b423401d52692222b499b/raw/11af365faa618db4e797a04ce0495d1bf60c4da7/medium_LightsailAndDocker_Blob.sh) ((which came from here)[https://medium.com/@JoshuaTheMiller/creating-a-simple-website-with-a-custom-domain-on-amazon-lightsail-docker-86600f19273])
 * Then added aws-cli
 * Also added docker-compose https://docs.docker.com/compose/install/#install-compose-on-linux-systems
 * Added git.
+* added heroku cli and creds.
 * `git clone <collab_backend path>`
