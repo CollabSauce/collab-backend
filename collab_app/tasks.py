@@ -87,6 +87,9 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
             document.querySelectorAll('[collabsauce-href]').forEach(el => {
                 el.href = el.getAttribute('collabsauce-href');
             });
+            document.querySelectorAll('[collabsauce-src]').forEach(el => {
+                el.src = el.getAttribute('collabsauce-src');
+            });
         }''')
         # we need to do this because the collabsauce-href's are technically loaded after the "load" event.
         # so we want to wait for that styling be loaded
