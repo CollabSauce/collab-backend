@@ -4,10 +4,8 @@ import re
 import boto3
 from celery import shared_task
 from django.conf import settings
-from django.core.mail.message import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
-from django.utils.html import strip_tags
 from playwright import sync_playwright
 
 from collab_app.models import (
@@ -15,6 +13,9 @@ from collab_app.models import (
     TaskComment,
     TaskHtml,
     User
+)
+from collab_app.utils import (
+    send_email
 )
 
 
@@ -39,9 +40,9 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
             chosen_browser = p.chromium
         elif lower_bname == 'safari':
             # chosen_browser = p.webkit
-            chosen_browser = p.chromium # Bug with safari still :/. Not loading correct libs on install :/.
+            chosen_browser = p.chromium  # Bug with safari still :/. Not loading correct libs on install :/.
         elif lower_bname == 'firefox':
-            chosen_browser = p.firefox # Note: inputs not rendered 100%. fix later?
+            chosen_browser = p.firefox  # Note: inputs not rendered 100%. fix later?
         else:
             chosen_browser = p.chromium  # not a chrome/safari/firefox browser. default to chrome
 
@@ -49,6 +50,7 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
         # See this answer: https://stackoverflow.com/a/50107359/9711626 for `args` arguments.
         browser = chosen_browser.launch(chromiumSandbox=False)
         page = browser.newPage(deviceScaleFactor=device_scale_factor)
+
         def log_and_continue_request(route, request):
             print('request:')
             print(request.url)
@@ -160,7 +162,7 @@ def notify_participants_of_task(task_id):
                 'task_creator_name': task_creator_name,
                 'task_url': f'projects/{project_id}/tasks/{task_id}'
             })
-            send_email.delay(subject, body, settings.EMAIL_HOST_USER, [assignee.email], fail_silently=False)
+            send_email(subject, body, settings.EMAIL_HOST_USER, [assignee.email], fail_silently=False)
             already_mentioned.add(assignee)
         except Exception as err:
             print('Error while notifying assignee on task create')
@@ -180,7 +182,7 @@ def notify_participants_of_task(task_id):
                     'task_creator_name': task_creator_name,
                     'task_url': f'projects/{project_id}/tasks/{task_id}'
                 })
-                send_email.delay(subject, body, settings.EMAIL_HOST_USER, [mentioned.email], fail_silently=False)
+                send_email(subject, body, settings.EMAIL_HOST_USER, [mentioned.email], fail_silently=False)
                 already_mentioned.add(mentioned)
         except Exception as err:
             print('Error while notifying on task create')
@@ -210,7 +212,7 @@ def notify_participants_of_task_comment(task_comment_id):
                 'taskcomment_creator_name': taskcomment_creator_name,
                 'task_url': f'projects/{project_id}/tasks/{task.id}'
             })
-            send_email.delay(subject, body, settings.EMAIL_HOST_USER, [mentioned.email], fail_silently=False)
+            send_email(subject, body, settings.EMAIL_HOST_USER, [mentioned.email], fail_silently=False)
             already_mentioned.add(mentioned)
         except Exception as err:
             print('Error while notifying on task comment create')
@@ -235,7 +237,7 @@ def notify_participants_of_task_comment(task_comment_id):
                     'taskcomment_creator_name': taskcomment_creator_name,
                     'task_url': f'projects/{project_id}/tasks/{task.id}'
                 })
-                send_email.delay(subject, body, settings.EMAIL_HOST_USER, [user.email], fail_silently=False)
+                send_email(subject, body, settings.EMAIL_HOST_USER, [user.email], fail_silently=False)
                 already_mentioned.add(user)
             except Exception as err:
                 print('Error while notifying on task comment notify all create')
@@ -253,32 +255,7 @@ def notify_participants_of_assignee_change(task_id):
         body = render_to_string('emails/tasks/task-assigned-changed.html', {
             'task_url': f'projects/{task.project.id}/tasks/{task_id}'
         })
-        send_email.delay(subject, body, settings.EMAIL_HOST_USER, [assignee.email], fail_silently=False)
+        send_email(subject, body, settings.EMAIL_HOST_USER, [assignee.email], fail_silently=False)
     except Exception as err:
         print('Error while notifying assignee on task update')
         print(err)
-
-
-def generate_email(subject, html_body, from_email, to_email, text_body='', cc=[], bcc=[], headers=None):
-    # attempt converting HTML (template) into text for fallback
-    if html_body and not text_body:
-        text_body = strip_tags(html_body)
-
-    email = EmailMultiAlternatives(
-        subject=subject, body=text_body, from_email=from_email,
-        to=to_email, cc=cc, bcc=bcc, headers=headers
-    )
-
-    if html_body:
-        email.attach_alternative(html_body, 'text/html')
-
-    return email
-
-
-@shared_task
-def send_email(
-    subject, html_body, from_email, to_email, text_body='', cc=[], bcc=[], headers=None, fail_silently=False
-):
-    to_email = list(to_email)
-    email = generate_email(subject, html_body, from_email, to_email, text_body, cc, bcc, headers)
-    email.send(fail_silently=fail_silently)

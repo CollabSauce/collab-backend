@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 
 from corsheaders.defaults import default_headers
-from django.core.management.utils import get_random_secret_key
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,9 +26,6 @@ DEBUG = int(os.environ.get("DEBUG", default=0))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY', default='87r&i3cwg$ky)s!zvq(ruj#a24r6ly5rhbs!=#8(^*=1-6^kv(')
-#  Weird `default` logic needed for heroku :/ . https://stackoverflow.com/a/62102995/9711626
-    # default='87r&i3cwg$ky)s!zvq(ruj#a24r6ly5rhbs!=#8(^*=1-6^kv(' if DEBUG else get_random_secret_key()
-# )
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(" ")
 
@@ -59,6 +55,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',  # for dj_rest_auth
     'dj_rest_auth',
     'dj_rest_auth.registration',
+    'djcelery_email',
     'django_extensions',
 ]
 
@@ -180,8 +177,14 @@ ACCOUNT_ADAPTER = 'collab_app.auth.adapters.AuthAccountAdapter'  # overwrite a m
 ACCOUNT_EMAIL_REQUIRED = True  # we are logging in/signing up through email, so this needs to be True
 ACCOUNT_USERNAME_REQUIRED = False  # username not required
 ACCOUNT_AUTHENTICATION_METHOD = 'email'  # we login/signup through email
-# ACCOUNT_USER_DISPLAY = 'collab_app.utils.account_user_display'  # used in email templates
-ACCOUNT_USER_DISPLAY = lambda user: user.get_full_name()  # used in email templates. used as `user_display` in emails
+
+
+# used in email templates. used as `user_display` in emails
+def get_user_display(user):
+    return user.get_full_name()
+
+
+ACCOUNT_USER_DISPLAY = get_user_display
 
 
 # For dj-rest-auth
@@ -213,18 +216,17 @@ REST_FRAMEWORK = {
 LOGIN_REDIRECT_URL = '/api'
 
 # email config
-if os.environ.get('ENVIRONMENT', 'development') == 'development':
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+if ENVIRONMENT == 'development':
+    CELERY_EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 else:
-    # default to smtp.EmailBackend (celery default anyways)
-    EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+    CELERY_EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.zoho.com')
-    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
     EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
     EMAIL_PORT = os.environ.get('EMAIL_PORT', '587')
-    email_tls = os.environ.get('EMAIL_USE_TLS', 'True')  # prod should be false
-    email_ssl = os.environ.get('EMAIL_USE_SSL', 'False')  # prod should be true
+    email_tls = os.environ.get('EMAIL_USE_TLS', 'True')  # prod should be true
+    email_ssl = os.environ.get('EMAIL_USE_SSL', 'False')  # prod should be false
 
     if email_tls == 'True':
         EMAIL_USE_TLS = True
@@ -235,7 +237,6 @@ else:
         EMAIL_USE_SSL = True
     elif email_ssl == 'False':
         EMAIL_USE_SSL = False
-
 
 # AWS_CREDS (used for celery)
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
@@ -249,7 +250,7 @@ else:
     CELERY_BROKER_URL = f'sqs://{AWS_ACCESS_KEY_ID}:{AWS_SECRET_ACCESS_KEY}@'
     CELERY_DEFAULT_QUEUE = os.environ.get('CELERY_DEFAULT_QUEUE', 'collab-staging')
     CELERY_BROKER_TRANSPORT_OPTIONS = {
-        'region': os.getenv('AWS_REGION','us-west-2')
+        'region': os.getenv('AWS_REGION', 'us-west-2')
     }
 
 # CORS

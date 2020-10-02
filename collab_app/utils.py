@@ -1,6 +1,8 @@
+from django.core.mail.message import EmailMultiAlternatives
 from django.db import IntegrityError
 from django.db.utils import DataError
 from django.shortcuts import _get_queryset
+from django.utils.html import strip_tags
 
 from rest_framework import exceptions
 
@@ -31,3 +33,27 @@ def catch_failures(func):
             raise exceptions.ValidationError(e.message)
 
     return wrapper
+
+
+def generate_email(subject, html_body, from_email, to_email, text_body='', cc=[], bcc=[], headers=None):
+    # attempt converting HTML (template) into text for fallback
+    if html_body and not text_body:
+        text_body = strip_tags(html_body)
+
+    email = EmailMultiAlternatives(
+        subject=subject, body=text_body, from_email=from_email,
+        to=to_email, cc=cc, bcc=bcc, headers=headers
+    )
+
+    if html_body:
+        email.attach_alternative(html_body, 'text/html')
+
+    return email
+
+
+def send_email(
+    subject, html_body, from_email, to_email, text_body='', cc=[], bcc=[], headers=None, fail_silently=False
+):
+    to_email = list(to_email)
+    email = generate_email(subject, html_body, from_email, to_email, text_body, cc, bcc, headers)
+    email.send(fail_silently=fail_silently)
