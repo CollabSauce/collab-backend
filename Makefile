@@ -123,6 +123,11 @@ lint: clean_working_directory
 show-virtualenv-path:
 	poetry show -v 2> /dev/null | head -1
 
+# get env vars for staging environment (using heroku)
+pull-staging-env-vars:
+	$(call header,"Saving env vars to .env.staging")
+	heroku config -s -a api-staging-collabsauce > .env.staging
+
 # rebuild the collab_backend_web container
 rebuild-collab-backend-web:
 	docker-compose -f ${YML_FILE} build collab_backend_web
@@ -139,6 +144,7 @@ rebuild: rebuild-image
 
 # rebuild the web and worker image
 rebuild-staging: YML_FILE=docker-compose.staging.yml
+rebuild-staging: pull-staging-env-vars
 rebuild-staging: rebuild-image
 
 run-staging-web:
