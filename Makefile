@@ -146,32 +146,3 @@ run-staging-web:
 
 run-staging-worker:
 	docker-compose -f docker-compose.staging.yml up -d collab_backend_worker
-
-# push docker tag to aws ecr
-# ecr-push: rebuild-image
-# 	$(call header,"Building tagging and pushing image to ecr")
-# 	docker tag collab-backend_collab_backend_web 759511149347.dkr.ecr.us-west-2.amazonaws.com/collabsauce-registry:${TAG_NAME}
-# 	docker push 759511149347.dkr.ecr.us-west-2.amazonaws.com/collabsauce-registry:${TAG_NAME}
-
-# staging tag and push
-# ecr-push-staging: YML_FILE=docker-compose.staging.yml
-# ecr-push-staging: TAG_NAME=staging-latest
-# ecr-push-staging: ecr-push
-
-# prod tag and push
-# ecr-push-prod:
-
-# start the celery worker on heroku
-# heroku_start_worker:
-# 	$(call header,"heroku_start_worker")
-# 	$(shell heroku ps:scale worker=$(WORKERS))
-
-# # stop the celery worker on heroku
-# heroku_stop_worker:
-# 	$(call header,"heroku_stop_worker")
-# 	$(shell heroku ps:scale worker=0)
-
-# heroku_worker_logs:
-# 	$(call header,"heroku_worker_logs")
-# 	$(shell heroku logs -t --dyno=worker)
-# 	# $(shell heroku logs -t -p worker)
