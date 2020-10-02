@@ -5,10 +5,9 @@ FROM python:3.7-slim
 RUN apt-get -y update && apt-get install -y postgresql-client git
 
 # install dependencies for playwright
-# https://gist.github.com/mxschmitt/900aa310730bfac360717796b62ad072
-RUN apt-get update && \
-    apt-get install -y \
-    # WebKit dependencies
+# https://github.com/microsoft/playwright/blob/master/docs/docker/Dockerfile.bionic
+# 2. Install WebKit dependencies
+RUN apt-get update && apt-get install -y \
     libwoff1 \
     libopus0 \
     libwebp6 \
@@ -19,35 +18,55 @@ RUN apt-get update && \
     libhyphen0 \
     libgdk-pixbuf2.0-0 \
     libegl1 \
+    libnotify4 \
     libxslt1.1 \
+    libevent-2.1-6 \
     libgles2 \
-    # gstreamer and plugins to support video playback in WebKit
+    libvpx5 \
+    libxcomposite1 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libepoxy0 \
+    libgtk-3-0 \
+    libharfbuzz-icu0 \
+    libcups2
+
+# 3. Install gstreamer and plugins to support video playback in WebKit.
+RUN apt-get update && apt-get install -y \
     libgstreamer-gl1.0-0 \
     libgstreamer-plugins-bad1.0-0 \
     gstreamer1.0-plugins-good \
-    # Chromium dependencies
+    gstreamer1.0-libav
+
+# 4. Install Chromium dependencies
+RUN apt-get update && apt-get install -y \
     libnss3 \
     libxss1 \
     libasound2 \
     fonts-noto-color-emoji \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libxcomposite1 \
-    libcups2 \
-    libgtk-3-0 \
-    # Firefox dependencies
+    libxtst6
+
+# 5. Install Firefox dependencies
+RUN apt-get update && apt-get install -y \
     libdbus-glib-1-2 \
-    libxt6 \
-    # FFmpeg to bring in audio and video codecs necessary for playing videos in Firefox
-    ffmpeg \
-    # (Optional) XVFB if there's a need to run browsers in headful mode
-    xvfb \
-    # For compiling libjpeg for WebKit
+    libxt6
+
+# 6. Install ffmpeg to bring in audio and video codecs necessary for playing videos in Firefox.
+RUN apt-get update && apt-get install -y \
+    ffmpeg
+
+# 7. (Optional) Install XVFB if there's a need to run browsers in headful mode
+RUN apt-get update && apt-get install -y \
+    xvfb
+
+# 8, 9, & 10: Is this needed? Taken from https://gist.github.com/mxschmitt/900aa310730bfac360717796b62ad072
+# 8. For compiling libjpeg for WebKit
+RUN apt-get update && apt-get install -y \
     curl \
     gcc \
     make
 
-# Compiling libjpeg for WebKit (for playwright)
+# 9. Compiling libjpeg for WebKit (for playwright)
 RUN cd /tmp && \
     curl -s http://www.ijg.org/files/jpegsrc.v8d.tar.gz | tar zx && \
     cd jpeg-8d && \
@@ -55,14 +74,11 @@ RUN cd /tmp && \
     make && \
     make install
 
-# Needed for pyrcurl (which celery-sqs uses under the hood)
-RUN apt-get install -y libcurl4-openssl-dev libssl-dev
-
-# Add directory in which libjpeg was built to the search path
+# 10. Add directory in which libjpeg was built to the search path
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
-# install psycopg2 dependencies
-# RUN apt-get install -y postgresql-dev gcc python3-dev musl-dev
+# Needed for pyrcurl (which celery-sqs uses under the hood)
+RUN apt-get install -y libcurl4-openssl-dev libssl-dev
 
 # Set environment variables
 # PYTHONDONTWRITEBYTECODE: Prevents Python from writing pyc files to disc (equivalent to python -B option)
@@ -85,7 +101,7 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip uninstall --yes poetry \
     && rm -rf ~/.config/pypoetry
 
-# NON-root user. mimics heroku
+# NON-root user. Better for security
 RUN useradd -m myuser
 USER myuser
 
@@ -105,6 +121,3 @@ RUN cp collab_app/hack/playwright/main.py /usr/local/lib/python3.7/site-packages
 
 # Switch back to myuser
 USER myuser
-
-# needed for heroku :/ . https://stackoverflow.com/a/62102995/9711626
-# RUN python manage.py collectstatic --noinput

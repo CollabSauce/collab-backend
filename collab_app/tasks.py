@@ -35,27 +35,19 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
 
     with sync_playwright() as p:
         lower_bname = browser_name.lower()
-        chosen_browser = p.chromium
-
-        # FOR NOW JUST USE CHROME... bug with safari? firefox not rendering inputs?
-        # if lower_bname == 'chrome':
-        #     chosen_browser = p.chromium
-        # elif lower_bname == 'safari':
-        #     chosen_browser = p.webkit
-        # elif lower_bname == 'firefox':
-        #     chosen_browser = p.firefox
-        # else:
-        #     chosen_browser = p.chromium  # not a chrome/safari/firefox browser. default to chrome
+        if lower_bname == 'chrome':
+            chosen_browser = p.chromium
+        elif lower_bname == 'safari':
+            # chosen_browser = p.webkit
+            chosen_browser = p.chromium # Bug with safari still :/. Not loading correct libs on install :/.
+        elif lower_bname == 'firefox':
+            chosen_browser = p.firefox # Note: inputs not rendered 100%. fix later?
+        else:
+            chosen_browser = p.chromium  # not a chrome/safari/firefox browser. default to chrome
 
         # need chromiumSandbox=False because we are not a ROOT user
         # See this answer: https://stackoverflow.com/a/50107359/9711626 for `args` arguments.
         browser = chosen_browser.launch(chromiumSandbox=False)
-        # browser = chosen_browser.launch(chromiumSandbox=False, args=[
-        #     # '--no-sandbox',
-        #     # '--disable-setuid-sandbox',
-        #     '--disable-dev-shm-usage',
-        #     '--single-process'
-        # ])
         page = browser.newPage(deviceScaleFactor=device_scale_factor)
         def log_and_continue_request(route, request):
             print('request:')
@@ -98,12 +90,20 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
                 var val = el.getAttribute('data-collab-value');
                 el.value = val;
             });
+            document.querySelectorAll('[data-collab-checked]').forEach(el => {
+                el.checked = true;
+            });
             document.getElementById('collab-sauce-iframe').style.display = 'none';
             document.querySelector('.CollabSauce__outline__').classList.remove('CollabSauce__outline__')
             document.querySelectorAll('[collabsauce-href]').forEach(el => {
                 el.href = el.getAttribute('collabsauce-href');
             });
         }''')
+        # we need to do this because the collabsauce-href's are technically loaded after the "load" event.
+        # so we want to wait for that styling be loaded
+        page.waitForLoadState('networkidle')
+        # wait 2 extra seconds just incase
+        page.waitForTimeout(2000)
         page.screenshot(path=window_screenshot_filepath, type='png')
         element = page.querySelector('[data-collab-selected-element]')
         element.screenshot(path=element_screenshot_filepath, type='png')
