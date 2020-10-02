@@ -57,10 +57,23 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
         #     '--single-process'
         # ])
         page = browser.newPage(deviceScaleFactor=device_scale_factor)
+        def log_and_continue_request(route, request):
+            print('request:')
+            print(request.url)
+            route.continue_()
+
+        def log_response(response):
+            print('response:')
+            print(response.url)
+            print(response.status)
+
+        # Log and continue all network requests
+        page.route('**', lambda route, request: log_and_continue_request(route, request))
+        page.on('response', lambda response: log_response(response))
         page.setViewportSize(width=window_width, height=window_height)
         page.setContent(html)
         # disable all scripts: https://stackoverflow.com/a/51953118/9711626
-        # page.evaluate('document.body.innerHTML = document.body.innerHTML')
+        page.evaluate('document.body.innerHTML = document.body.innerHTML')
 
         # TODO: data-collab-manual-height ???
         page.evaluate('''() => {
