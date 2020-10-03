@@ -446,6 +446,7 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
 
         task = Task.objects.get(id=task_id)
         task_column = TaskColumn.objects.get(id=task_column_id)
+        last_task_in_column = task_column.tasks.order_by('order').all().last()
 
         # verify that the task_column belongs to the same project as the task
         if not Project.objects.filter(
@@ -458,6 +459,7 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
 
         prev_task_column_id = task.task_column.id
         task.task_column = task_column
+        task.order = last_task_in_column.order + 1 if last_task_in_column else 1
         task.save()
 
         # for consistency with `reorder` task method, manually call
