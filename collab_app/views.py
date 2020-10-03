@@ -288,6 +288,8 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
         task_data = request.data
         task_ids = [task['id'] for task in task_data]
 
+        # TODO: check task_column field is valid too
+
         # get the specified tasks. make sure they belong to the correct specified project
         # and that the user has access to those tasks.
         tasks = Task.objects.filter(
@@ -427,6 +429,53 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
             },
             status=201
         )
+
+    @action(detail=False, methods=['post'])
+    def change_column_from_widget(self, request, *args, **kwargs):
+        task_id = request.data['task_id']
+        task_column_id = request.data['task_column_id']
+
+        # verify that the current user can update this task
+        if not Task.objects.filter(
+            id=task_id,
+            project__organization__memberships__user=request.user
+        ).exists():
+            raise exceptions.ValidationError(
+                'You do not have permission to update this task.'
+            )
+
+        task = Task.objects.get(id=task_id)
+        task_column = TaskColumn.objects.get(id=task_column_id)
+
+        # verify that the task_column belongs to the same project as the task
+        if not Project.objects.filter(
+            tasks=task,
+            task_columns=task_column
+        ).exists():
+            raise exceptions.ValidationError(
+                'This task column does not share the same project as the task.'
+            )
+
+        prev_task_column_id = task.task_column.id
+        task.task_column = task_column
+        task.save()
+
+        # for consistency with `reorder` task method, manually call
+        # the `notify_participants_of_task_column_change` method.
+        notify_participants_of_task_column_change.delay(
+            task_id,
+            prev_task_column_id,
+            task_column_id,
+            request.user.id
+        )
+
+        return Response({
+            'task': TaskSerializer(
+                task,
+                include_fields=TaskSerializer.Meta.deferred_fields).data
+            }, status=200
+        )
+
 
     @action(detail=False, methods=['post'])
     def update_assignee(self, request, *args, **kwargs):
