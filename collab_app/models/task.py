@@ -64,6 +64,7 @@ class TaskColumn(BaseModel):
     TASK_COLUMN_NAMES = [TASK_COLUMN_RAW_TASK, 'To-Do', 'In Progress', 'In Review', 'Done', 'Released']
 
     name = models.TextField()
+    order = models.PositiveIntegerField(default=0)
 
     project = models.ForeignKey(
         'collab_app.Project',

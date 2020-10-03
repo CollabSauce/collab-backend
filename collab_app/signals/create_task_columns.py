@@ -15,8 +15,11 @@ def create_task_columns_on_project_create(sender, instance, created, **kwargs):
 
     if created:
         TaskColumn = apps.get_model('collab_app', 'TaskColumn')
+        order_num = 1
         for name in TaskColumn.TASK_COLUMN_NAMES:
             TaskColumn.objects.create(
                 name=name,
-                project=project
+                project=project,
+                order=order_num
             )
+            order_num += 1
