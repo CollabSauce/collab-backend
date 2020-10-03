@@ -10,6 +10,7 @@ from playwright import sync_playwright
 
 from collab_app.models import (
     Task,
+    TaskColumn,
     TaskComment,
     TaskHtml,
     User
@@ -219,6 +220,12 @@ def notify_participants_of_task_comment(task_comment_id):
             mentioned = User.objects.get(id=user_id)
             users_to_notify.append(mentioned)  # notify anyone who has been previously mentioned on a task
 
+    # check the task.title too
+    matches = re.findall(regex, task.title)
+    for user_id in matches:
+        mentioned = User.objects.get(id=user_id)
+        users_to_notify.append(mentioned)  # notify anyone who has been mentioned on the task title
+
     for user in users_to_notify:
         if user not in already_mentioned:
             try:
@@ -249,3 +256,54 @@ def notify_participants_of_assignee_change(task_id):
     except Exception as err:
         print('Error while notifying assignee on task update')
         print(err)
+
+
+@shared_task
+def notify_participants_of_task_column_change(task_id, prev_task_column_id, new_task_column_id, mover_id):
+    task = Task.objects.get(id=task_id)
+    prev_task_column = TaskColumn.objects.get(id=prev_task_column_id)
+    new_task_column = TaskColumn.objects.get(id=new_task_column_id)
+    mover = User.objects.get(id=mover_id)
+    mover_full_name = f'{mover.first_name} {mover.last_name}'
+    project_id = task.project.id
+
+    # notify the task creator and task.assigned_to.
+    # If they are the same person, or if that was the mover, logic below already handles duplicates
+    users_to_notify = [task.creator, task.assigned_to]
+
+    # Now notify everyone who is 'participating' on the task chain
+    regex = r'@@@__(\d+)\^\^\^'
+    for comment in task.task_comments.all():
+        users_to_notify.append(comment.creator)  # notify the task-comment creator
+        matches = re.findall(regex, comment.text)
+        for user_id in matches:
+            mentioned = User.objects.get(id=user_id)
+            users_to_notify.append(mentioned)  # notify anyone who has been previously mentioned on a task
+
+    # check the task.title too
+    matches = re.findall(regex, task.title)
+    for user_id in matches:
+        mentioned = User.objects.get(id=user_id)
+        users_to_notify.append(mentioned)  # notify anyone who has been mentioned on the task title
+
+    already_mentioned = set([mover])
+
+    for user in users_to_notify:
+        if user not in already_mentioned:
+            try:
+                subject = (
+                    f'{mover_full_name} has moved task # {task.task_number} '
+                    f'from `{prev_task_column.name}` to `{new_task_column.name}`.'
+                )
+                body = render_to_string('emails/tasks/task-moved-column.html', {
+                    'mover_full_name': mover_full_name,
+                    'task_number': task.task_number,
+                    'prev_task_column_name': prev_task_column.name,
+                    'new_task_column_name': new_task_column.name,
+                    'task_url': f'projects/{project_id}/tasks/{task.id}'
+                })
+                send_email(subject, body, settings.EMAIL_HOST_USER, [user.email], fail_silently=False)
+                already_mentioned.add(user)
+            except Exception as err:
+                print('Error while notifying on task move notify all')
+                print(err)

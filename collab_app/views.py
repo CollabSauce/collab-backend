@@ -44,7 +44,10 @@ from collab_app.serializers import (
     TaskMetadataSerializer,
     UserSerializer,
 )
-from collab_app.tasks import create_screenshots_for_task
+from collab_app.tasks import (
+    create_screenshots_for_task,
+    notify_participants_of_task_column_change
+)
 
 
 class ApiViewSet(GateKeeper, AddCreatorMixin, SaveMixin, DynamicModelViewSet):
@@ -301,13 +304,37 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
         for json_task in task_data:
             task_map[json_task['id']] = json_task
 
-        # now for each djang0-task, update order and task column
+        # there should only be one task that changed columns.
+        # but just incase, make it a list
+        tasks_that_changed_columns = []
+
+        # now for each django-task, update order and task column
         for task in tasks:
             json_task = task_map[task.id]
             task.order = json_task['order']
-            task.task_column_id = json_task['task_column']
+            prev_task_column_id = task.task_column_id
+            new_task_column_id = json_task['task_column']
+            if prev_task_column_id != new_task_column_id:
+                task.task_column_id = new_task_column_id
+                tasks_that_changed_columns.append({
+                    'task_id': task.id,
+                    'prev_task_column_id': prev_task_column_id,
+                    'new_task_column_id': new_task_column_id
+                })
 
         Task.objects.bulk_update(tasks, ['order', 'task_column'])
+
+        # now, for each task that changed columns, notify particpanta
+        # As mentioned above, there should only be one task changed,
+        # but just incase, loop through the list.
+        # Also note: we can't do this in a signal because of the `bulk_update`.
+        for moved_task_data in tasks_that_changed_columns:
+            notify_participants_of_task_column_change.delay(
+                moved_task_data['task_id'],
+                moved_task_data['prev_task_column_id'],
+                moved_task_data['new_task_column_id'],
+                request.user.id
+            )
 
         return Response({
             'tasks': TaskSerializer(

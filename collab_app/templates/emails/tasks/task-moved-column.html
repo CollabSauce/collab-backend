@@ -1,0 +1,6 @@
+{% load dashboard_url %}
+<p>
+    Hello!<br><br>
+    {{ mover_full_name }} has moved task #{{ task_number }} from `{{ prev_task_column_name }}` to `{{ new_task_column_name }}`. Check out the task here: <a href="{% dashboard_url %}/{{task_url}}">{% dashboard_url %}/{{task_url}}</a>
+    <br><br>
+</p>
