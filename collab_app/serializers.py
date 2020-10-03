@@ -220,6 +220,7 @@ class TaskColumnSerializer(ApiSerializer):
         fields = (
             'id',
             'name',
+            'order',
             'project',
             'tasks',
         )
