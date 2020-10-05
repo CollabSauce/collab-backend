@@ -139,7 +139,7 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
 @shared_task
 def notify_participants_of_task(task_id):
     task = Task.objects.get(id=task_id)
-    task_creator_name = f'{task.creator.first_name} {task.creator.last_name}'
+    task_creator_name = f'{task.creator.first_name} {task.creator.last_name}' if task.creator else task.one_off_email_set_by
     project_id = task.project.id
 
     already_mentioned = set()
@@ -227,7 +227,7 @@ def notify_participants_of_task_comment(task_comment_id):
         users_to_notify.append(mentioned)  # notify anyone who has been mentioned on the task title
 
     for user in users_to_notify:
-        if user not in already_mentioned:
+        if user and user not in already_mentioned:
             try:
                 subject = f'{taskcomment_creator_name} has commented on a task you are participating on.'
                 body = render_to_string('emails/tasks/taskcomment-participating.html', {
@@ -289,7 +289,7 @@ def notify_participants_of_task_column_change(task_id, prev_task_column_id, new_
     already_mentioned = set([mover])
 
     for user in users_to_notify:
-        if user not in already_mentioned:
+        if user and user not in already_mentioned:
             try:
                 subject = (
                     f'{mover_full_name} has moved task # {task.task_number} '

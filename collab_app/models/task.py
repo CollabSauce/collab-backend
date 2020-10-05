@@ -14,6 +14,7 @@ class Task(BaseModel):
     is_resolved = models.BooleanField(default=False)
     target_id = models.TextField(blank=True, default='')
     target_dom_path = models.TextField(blank=True, default='')
+    one_off_email_set_by = models.TextField(blank=True, default='')
 
     # for ordering inside a task_column
     order = models.PositiveIntegerField(default=0)
@@ -33,7 +34,9 @@ class Task(BaseModel):
     creator = models.ForeignKey(
         'collab_app.User',
         related_name='created_tasks',
-        on_delete=models.PROTECT
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
     )
 
     # Should I make this assigned to a Membership instead?

@@ -186,7 +186,10 @@ class TaskSerializer(ApiSerializer):
         return ''
 
     def get_creator_full_name(self, task):
-        return f'{task.creator.first_name} {task.creator.last_name}'
+        if task.creator:
+            return f'{task.creator.first_name} {task.creator.last_name}'
+        else:
+            return task.one_off_email_set_by
 
 
 class TaskCommentSerializer(ApiSerializer):

@@ -4,6 +4,7 @@ from dynamic_rest.viewsets import DynamicModelViewSet
 from rest_framework.decorators import action
 from rest_framework import exceptions
 from rest_framework.permissions import (
+    AllowAny,
     IsAuthenticated,
 )
 from rest_framework.response import Response
@@ -239,6 +240,8 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = (IsAuthenticated, )
+    # permission_classes = []
+    # authentication_classes = []
 
     @action(detail=False, methods=['post'])
     def create_task(self, request, *args, **kwargs):
@@ -347,21 +350,39 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
             status=200
         )
 
-    @action(detail=False, methods=['post'])
-    def create_task_from_widget(self, request, *args, **kwargs):
+    def _widget_create_task(self, request, *args, **kwargs):
+        # NOTE: `is_authed` means the user is authenticated and has access to the project.
+        # If they don't, the `creator` will be None and we will set the `one_off_email_set_by` field.
+
         task_request_data = request.data['task']
         task_metadata_request_data = request.data['task_metadata']
         html = request.data['html']
 
-        # make sure user has access to this project
+        is_authed = request.user.is_authenticated and task_request_data['project']
+
+        # if the user is_authed, then they will have access to the project.
+        # But if they are sending this method as non-authed, then they will only
+        # send the `project_key`. We need to get the project_id based off this key.
         project_id = task_request_data['project']
-        if not Project.objects.filter(
-            id=project_id,
-            organization__memberships__user=request.user
-        ).exists():
-            raise exceptions.ValidationError(
-                'You do not have access to this project.'
-            )
+        if not project_id:
+            project_key = task_request_data['project_key']
+            project = Project.objects.filter(key=project_key).first()
+            if not project:
+                raise exceptions.ValidationError(
+                    'The project key is not implemented correctly on this website.'
+                )
+            else:
+                project_id = project.id
+
+        # make sure user has access to this project (if `is_authed`)
+        if is_authed:
+            if not Project.objects.filter(
+                id=project_id,
+                organization__memberships__user=request.user
+            ).exists():
+                raise exceptions.ValidationError(
+                    'You do not have access to this project.'
+                )
 
         assigned_to_id = task_request_data.get('assigned_to', None)
         if assigned_to_id:
@@ -388,7 +409,8 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
             project_id=project_id,
             task_column=task_column,
             assigned_to_id=assigned_to_id,
-            creator=request.user,
+            creator=request.user if is_authed else None,
+            one_off_email_set_by=task_request_data['one_off_email_set_by'],
             task_number=next_number
         )
         task_metadata = TaskMetadata.objects.create(
@@ -429,6 +451,14 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
             },
             status=201
         )
+
+    @action(detail=False, methods=['post'])
+    def create_task_from_widget(self, request, *args, **kwargs):
+        return self._widget_create_task(request, *args, **kwargs)
+
+    @action(detail=False, methods=['post'], permission_classes=(AllowAny,), authentication_classes=())
+    def create_task_from_widget_anonymous(self, request, *args, **kwargs):
+        return self._widget_create_task(request, *args, **kwargs)
 
     @action(detail=False, methods=['post'])
     def change_column_from_widget(self, request, *args, **kwargs):
