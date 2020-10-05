@@ -73,6 +73,7 @@ Steps:
 * In the ec2 instance for running server:
     * `cd collab-backend`
     * `git pull origin master`
+    * `docker-compose down`
     * `make rebuild-staging`
     * `make run-staging-web`
 * In the ec2 instance from running celery:
