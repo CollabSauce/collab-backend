@@ -82,11 +82,11 @@ Steps:
 Use shell in staging environment:
     * In an ec2 instance (say the web instance): `docker exec -it collab_backend_web bash` and then `python manage.py shell_plus --ipython`
 
-History:
+History - create a snapshot from scratch:
 * running aws lightsail
 * Created an ubuntu instance. Added docker to the instance [see here](https://gist.githubusercontent.com/JoshuaTheMiller/c8203dfd4c9b423401d52692222b499b/raw/11af365faa618db4e797a04ce0495d1bf60c4da7/medium_LightsailAndDocker_Blob.sh) ((which came from here)[https://medium.com/@JoshuaTheMiller/creating-a-simple-website-with-a-custom-domain-on-amazon-lightsail-docker-86600f19273])
-* Then added aws-cli
-* Also added docker-compose https://docs.docker.com/compose/install/#install-compose-on-linux-systems
-* Added git.
-* added heroku cli and creds.
-* `git clone <collab_backend path>`
+* Then added docker-compose [see here](https://docs.docker.com/compose/install/#install-compose-on-linux-systems)
+* Added git: `sudo apt-get install git`.
+* added heroku cli and creds: `sudo snap install --classic heroku` [see here](https://devcenter.heroku.com/articles/heroku-cli#download-and-install).
+* Login with heroku with info@collabsauce.com creds: `heroku login -i`
+* `git clone https://<github collabsauce-root personal-access-token>@github.com/CollabSauce/collab-backend.git`

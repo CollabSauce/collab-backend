@@ -9,4 +9,4 @@
 /staticfiles
 .DS_Store
 .env.staging
-.env.prod
+.env.production

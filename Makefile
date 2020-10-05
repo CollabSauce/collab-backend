@@ -128,6 +128,11 @@ pull-staging-env-vars:
 	$(call header,"Saving env vars to .env.staging")
 	heroku config -s -a api-staging-collabsauce > .env.staging
 
+# get env vars for staging environment (using heroku)
+pull-production-env-vars:
+	$(call header,"Saving env vars to .env.production")
+	heroku config -s -a api-production-collabsauce > .env.production
+
 # rebuild the collab_backend_web container
 rebuild-collab-backend-web:
 	docker-compose -f ${YML_FILE} build collab_backend_web
@@ -142,7 +147,7 @@ rebuild-image: rebuild-collab-backend-web rebuild-collab-backend-worker
 rebuild: YML_FILE=docker-compose.yml
 rebuild: rebuild-image
 
-# rebuild the web and worker image
+# rebuild the web and worker image for staging
 rebuild-staging: YML_FILE=docker-compose.staging.yml
 rebuild-staging: pull-staging-env-vars
 rebuild-staging: rebuild-image
@@ -152,3 +157,14 @@ run-staging-web:
 
 run-staging-worker:
 	docker-compose -f docker-compose.staging.yml up -d collab_backend_worker
+
+# rebuild the web and worker image for production
+rebuild-production: YML_FILE=docker-compose.production.yml
+rebuild-production: pull-production-env-vars
+rebuild-production: rebuild-image
+
+run-production-web:
+	docker-compose -f docker-compose.production.yml up -d collab_backend_web
+
+run-production-worker:
+	docker-compose -f docker-compose.production.yml up -d collab_backend_worker
