@@ -139,7 +139,10 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
 @shared_task
 def notify_participants_of_task(task_id):
     task = Task.objects.get(id=task_id)
-    task_creator_name = f'{task.creator.first_name} {task.creator.last_name}' if task.creator else task.one_off_email_set_by
+    if task.creator:
+        task_creator_name = f'{task.creator.first_name} {task.creator.last_name}'
+    else:
+        task_creator_name = task.one_off_email_set_by
     project_id = task.project.id
 
     already_mentioned = set()

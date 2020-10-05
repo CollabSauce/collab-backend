@@ -508,7 +508,6 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
             }, status=200
         )
 
-
     @action(detail=False, methods=['post'])
     def update_assignee(self, request, *args, **kwargs):
         assigned_to_id = request.data['assigned_to_id']
