@@ -130,8 +130,8 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
         print('Error while deleting files')
         print(err)
 
-    task.window_screenshot_url = f'https://s3-us-west-1.amazonaws.com/{s3_bucket}/{window_file_name}'
-    task.element_screenshot_url = f'https://s3-us-west-1.amazonaws.com/{s3_bucket}/{element_file_name}'
+    task.window_screenshot_url = f'https://s3-us-west-2.amazonaws.com/{s3_bucket}/{window_file_name}'
+    task.element_screenshot_url = f'https://s3-us-west-2.amazonaws.com/{s3_bucket}/{element_file_name}'
     task.save()
     task_html.delete()
 
