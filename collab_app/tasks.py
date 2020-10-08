@@ -53,11 +53,14 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
         page = browser.newPage(deviceScaleFactor=device_scale_factor)
         page.setViewportSize(width=window_width, height=window_height)
         page.setContent(html)
+        print('here')
         # disable all scripts: https://stackoverflow.com/a/51953118/9711626
         page.evaluate('document.body.innerHTML = document.body.innerHTML')
+        print('there')
 
         # TODO: data-collab-manual-height ???
         # TODO: get checkboxes working on firefox ???
+
         page.evaluate('''() => {
             document.querySelectorAll('[data-collab-checked="true"').forEach(el => el.checked = true);
             document.querySelectorAll('[data-collab-top]').forEach(el => {
@@ -95,14 +98,19 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
         }''')
         # we need to do this because the collabsauce-href's are technically loaded after the "load" event.
         # so we want to wait for that styling be loaded
+        print('above')
         page.waitForLoadState('networkidle')
+        print('below')
         # wait 2 extra seconds just incase
         page.waitForTimeout(2000)
+        print('after')
         page.screenshot(path=window_screenshot_filepath, type='png')
         element = page.querySelector('[data-collab-selected-element]')
         element.screenshot(path=element_screenshot_filepath, type='png')
+        print('screenshots taken')
         browser.close()
 
+    print('closed browser')
     s3 = boto3.resource('s3')
     s3_bucket = getattr(settings, 'S3_BUCKET')
     window_file_name = f'{organization.id}/{project.id}/{file_key}-window.png'
