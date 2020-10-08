@@ -22,24 +22,19 @@ from collab_app.utils import (
 
 @shared_task
 def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scale_factor, window_width, window_height):
-    print('1111111')
     task = Task.objects.get(id=task_id)
     task_html = TaskHtml.objects.get(id=task_html_id)
     html = task_html.html
     project = task.project
     organization = project.organization
 
-    print('2222222')
-
     file_key = get_random_string(length=32)
     window_screenshot_filepath = f'tmp/{file_key}-window.png'
     element_screenshot_filepath = f'tmp/{file_key}-element.png'
-    print('33333333')
 
     if not os.path.exists('tmp'):
         os.makedirs('tmp')
 
-    print('4444444')
     with sync_playwright() as p:
         lower_bname = browser_name.lower()
         if lower_bname == 'chrome':
@@ -54,19 +49,13 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
 
         # need chromiumSandbox=False because we are not a ROOT user
         # See this answer: https://stackoverflow.com/a/50107359/9711626 for `args` arguments.
-        print('55555555')
         browser = chosen_browser.launch(chromiumSandbox=False)
-        print('6666666')
         page = browser.newPage(deviceScaleFactor=device_scale_factor)
-        print('7777777')
         page.setViewportSize(width=window_width, height=window_height)
-        print('8888888')
-        # print(html)
         page.setContent(html)
-        print('here')
         # disable all scripts: https://stackoverflow.com/a/51953118/9711626
+        # TODO: THIS ISN'T WORKING AS EXPECTED. comment out and find a different solution (if needed?)
         # page.evaluate('document.body.innerHTML = document.body.innerHTML')
-        print('there')
 
         # TODO: data-collab-manual-height ???
         # TODO: get checkboxes working on firefox ???
@@ -108,24 +97,15 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
         }''')
         # we need to do this because the collabsauce-href's are technically loaded after the "load" event.
         # so we want to wait for that styling be loaded
-        print('above')
         page.waitForLoadState('networkidle')
-        print('below')
         # wait 2 extra seconds just incase
         page.waitForTimeout(2000)
-        print('after')
         page.screenshot(path=window_screenshot_filepath, type='png')
-        inthere = html.find('data-collab-selected-element')
-        print('in there: ' + str(inthere))
-        print('waiting for selector')
         page.waitForSelector('[data-collab-selected-element]');
-        print('selector loaded')
         element = page.querySelector('[data-collab-selected-element]')
         element.screenshot(path=element_screenshot_filepath, type='png')
-        print('screenshots taken')
         browser.close()
 
-    print('closed browser')
     s3 = boto3.resource('s3')
     s3_bucket = getattr(settings, 'S3_BUCKET')
     window_file_name = f'{organization.id}/{project.id}/{file_key}-window.png'
@@ -154,8 +134,8 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
         print('Error while deleting files')
         print(err)
 
-    task.window_screenshot_url = f'https://s3-us-west-1.amazonaws.com/{s3_bucket}/{window_file_name}'
-    task.element_screenshot_url = f'https://s3-us-west-1.amazonaws.com/{s3_bucket}/{element_file_name}'
+    task.window_screenshot_url = f'https://s3-us-west-2.amazonaws.com/{s3_bucket}/{window_file_name}'
+    task.element_screenshot_url = f'https://s3-us-west-2.amazonaws.com/{s3_bucket}/{element_file_name}'
     task.save()
     task_html.delete()
 
