@@ -22,19 +22,24 @@ from collab_app.utils import (
 
 @shared_task
 def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scale_factor, window_width, window_height):
+    print('1111111')
     task = Task.objects.get(id=task_id)
     task_html = TaskHtml.objects.get(id=task_html_id)
     html = task_html.html
     project = task.project
     organization = project.organization
 
+    print('2222222')
+
     file_key = get_random_string(length=32)
     window_screenshot_filepath = f'tmp/{file_key}-window.png'
     element_screenshot_filepath = f'tmp/{file_key}-element.png'
+    print('33333333')
 
     if not os.path.exists('tmp'):
         os.makedirs('tmp')
 
+    print('4444444')
     with sync_playwright() as p:
         lower_bname = browser_name.lower()
         if lower_bname == 'chrome':
@@ -49,9 +54,13 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
 
         # need chromiumSandbox=False because we are not a ROOT user
         # See this answer: https://stackoverflow.com/a/50107359/9711626 for `args` arguments.
+        print('55555555')
         browser = chosen_browser.launch(chromiumSandbox=False)
+        print('6666666')
         page = browser.newPage(deviceScaleFactor=device_scale_factor)
+        print('7777777')
         page.setViewportSize(width=window_width, height=window_height)
+        print('8888888')
         page.setContent(html)
         print('here')
         # disable all scripts: https://stackoverflow.com/a/51953118/9711626
