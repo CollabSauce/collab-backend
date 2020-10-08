@@ -11,6 +11,7 @@ from collab_app.models import (
     Task,
     TaskColumn,
     TaskComment,
+    TaskHtml,
     TaskMetadata,
     User,
 )
@@ -25,6 +26,7 @@ from collab_app.models import (
     Task,
     TaskColumn,
     TaskComment,
+    TaskHtml,
     TaskMetadata,
 )
 class DefaultAdmin(admin.ModelAdmin):
