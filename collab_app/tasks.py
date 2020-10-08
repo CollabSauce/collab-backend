@@ -116,7 +116,7 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
         print('after')
         page.screenshot(path=window_screenshot_filepath, type='png')
         inthere = html.find('data-collab-selected-element')
-        print('in there: ' + inthere)
+        print('in there: ' + str(inthere))
         element = page.querySelector('[data-collab-selected-element]')
         element.screenshot(path=element_screenshot_filepath, type='png')
         print('screenshots taken')
