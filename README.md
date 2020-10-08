@@ -90,3 +90,5 @@ History - create a snapshot from scratch:
 * added heroku cli and creds: `sudo snap install --classic heroku` [see here](https://devcenter.heroku.com/articles/heroku-cli#download-and-install).
 * Login with heroku with info@collabsauce.com creds: `heroku login -i`
 * `git clone https://<github collabsauce-root personal-access-token>@github.com/CollabSauce/collab-backend.git`
+* install make too: `sudo apt install make`
+* Also need to run `sudo chmod 666 /var/run/docker.sock` for docker to run properly. [see here](https://github.com/palantir/gradle-docker/issues/188#issuecomment-472613507)

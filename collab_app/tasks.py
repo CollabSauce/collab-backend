@@ -84,7 +84,8 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
                 el.checked = true;
             });
             document.getElementById('collab-sauce-iframe').style.display = 'none';
-            document.querySelector('.CollabSauce__outline__').classList.remove('CollabSauce__outline__')
+            document.querySelector('.CollabSauce__outline__') &&
+                document.querySelector('.CollabSauce__outline__').classList.remove('CollabSauce__outline__');
             document.querySelectorAll('[collabsauce-href]').forEach(el => {
                 el.href = el.getAttribute('collabsauce-href');
             });
