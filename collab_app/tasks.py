@@ -61,7 +61,7 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
         print('7777777')
         page.setViewportSize(width=window_width, height=window_height)
         print('8888888')
-        print(html)
+        # print(html)
         page.setContent(html)
         print('here')
         # disable all scripts: https://stackoverflow.com/a/51953118/9711626
