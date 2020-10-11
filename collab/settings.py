@@ -238,6 +238,9 @@ else:
     elif email_ssl == 'False':
         EMAIL_USE_SSL = False
 
+# AWS REGION - needed for celery and screenshot task
+AWS_REGION = os.getenv('AWS_REGION', 'us-west-2')
+
 # AWS_CREDS (used for celery)
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
@@ -250,7 +253,7 @@ else:
     CELERY_BROKER_URL = f'sqs://{AWS_ACCESS_KEY_ID}:{AWS_SECRET_ACCESS_KEY}@'
     CELERY_DEFAULT_QUEUE = os.environ.get('CELERY_DEFAULT_QUEUE', 'collab-staging')
     CELERY_BROKER_TRANSPORT_OPTIONS = {
-        'region': os.getenv('AWS_REGION', 'us-west-2')
+        'region': AWS_REGION
     }
 
 # CORS
