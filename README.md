@@ -46,7 +46,7 @@ Quick docker tips:
     * Then, in another terminal, run `docker attach collab_backend_web`. Pdb will work in this container.
 * **Debugging 3rd party libs**: Sometimes you will want to inspect or debug 3rd party packages. 
     * Make sure the `collab_backend_web` is already running.
-    * Run `docker exec -it collab_backend_web sh`
+    * Run `docker exec -it collab_backend_web bash`
     * Inside that container, find the location of the package you want. Say you want to debug the `django` library. Run:
         ```sh
         # pip show django

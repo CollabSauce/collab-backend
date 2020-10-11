@@ -3,12 +3,25 @@
 {% load i18n %}
 {% autoescape off %}
 {% blocktrans with site_name=current_site.name site_domain=current_site.domain %}
-Hello from {{ site_name }}!
+Hi,
 
-You're receiving this e-mail because {{ user_display }} signed up for {{ site_name }}.
+Thanks for trying out {{ site_name }}! We’re excited to help you give feedback and ship products faster.
+
+Some next steps to set your team up for success with {{ site_name }}:
+
+  1. Be sure to install the widget on the <body> section of your web pages.
+  2. Invite members of your team to the dashboard so they can get collaborating.
+
+If you need anything else, don’t hesitate to respond to this email.
+
+Thanks,
+
+{{ site_name }} Team
+
+-------------
+
+How to Install Widget: https://collabsauce.tawk.help/article/how-to-install-the-widget
+
+Inviting Team Members: https://collabsauce.tawk.help/article/how-to-invite-team-members-in-the-dashboard
 {% endblocktrans %}
 {% endautoescape %}
-{% blocktrans with site_name=current_site.name site_domain=current_site.domain %}
-Thank you from {{ site_name }}!
-{{ site_domain }}
-{% endblocktrans %}
