@@ -126,7 +126,7 @@ show-virtualenv-path:
 # get env vars for staging environment (using heroku)
 pull-staging-env-vars:
 	$(call header,"Saving env vars to .env.staging")
-	heroku config -s -a api-staging-collabsauce-moved > .env.staging
+	heroku config -s -a api-production-collabsauce > .env.staging
 
 # get env vars for staging environment (using heroku)
 pull-production-env-vars:
