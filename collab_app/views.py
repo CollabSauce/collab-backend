@@ -245,6 +245,7 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
     # authentication_classes = []
 
     @action(detail=False, methods=['post'])
+    @transaction.atomic
     def create_task(self, request, *args, **kwargs):
         project_id = request.data['project']
         task_column_id = request.data['task_column']
@@ -288,6 +289,7 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
         )
 
     @action(detail=False, methods=['post'])
+    @transaction.atomic
     def reorder_tasks(self, request, *args, **kwargs):
         task_data = request.data
         task_ids = [task['id'] for task in task_data]
@@ -335,7 +337,7 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
         # but just incase, loop through the list.
         # Also note: we can't do this in a signal because of the `bulk_update`.
         for moved_task_data in tasks_that_changed_columns:
-            notify_participants_of_task_column_change.delay(
+            notify_participants_of_task_column_change.delay_on_commit(
                 moved_task_data['task_id'],
                 moved_task_data['prev_task_column_id'],
                 moved_task_data['new_task_column_id'],
@@ -442,12 +444,8 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
         # wrap in transaction.on_commit. see below links:
         # https://browniebroke.com/blog/making-celery-work-nicely-with-django-transactions/
         # https://docs.celeryproject.org/en/latest/userguide/tasks.html?highlight=on_commit#database-transactions
-        print('task_id:')
-        print(task_id)
-        transaction.on_commit(
-            lambda: create_screenshots_for_task.delay(
-                task_id, task_html.id, browser_name, device_scale_factor, window_width, window_height
-            )
+        create_screenshots_for_task.delay_on_commit(
+            task_id, task_html.id, browser_name, device_scale_factor, window_width, window_height
         )
 
         return Response({
@@ -462,14 +460,17 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
         )
 
     @action(detail=False, methods=['post'])
+    @transaction.atomic
     def create_task_from_widget(self, request, *args, **kwargs):
         return self._widget_create_task(request, *args, **kwargs)
 
     @action(detail=False, methods=['post'], permission_classes=(AllowAny,), authentication_classes=())
+    @transaction.atomic
     def create_task_from_widget_anonymous(self, request, *args, **kwargs):
         return self._widget_create_task(request, *args, **kwargs)
 
     @action(detail=False, methods=['post'])
+    @transaction.atomic
     def change_column_from_widget(self, request, *args, **kwargs):
         task_id = request.data['task_id']
         task_column_id = request.data['task_column_id']
@@ -503,7 +504,7 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
 
         # for consistency with `reorder` task method, manually call
         # the `notify_participants_of_task_column_change` method.
-        notify_participants_of_task_column_change.delay(
+        notify_participants_of_task_column_change.delay_on_commit(
             task_id,
             prev_task_column_id,
             task_column_id,
