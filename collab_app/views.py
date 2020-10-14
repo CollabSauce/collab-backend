@@ -442,6 +442,8 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
         # wrap in transaction.on_commit. see below links:
         # https://browniebroke.com/blog/making-celery-work-nicely-with-django-transactions/
         # https://docs.celeryproject.org/en/latest/userguide/tasks.html?highlight=on_commit#database-transactions
+        print('task_id:')
+        print(task_id)
         transaction.on_commit(
             lambda: create_screenshots_for_task.delay(
                 task_id, task_html.id, browser_name, device_scale_factor, window_width, window_height
