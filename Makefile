@@ -127,11 +127,13 @@ show-virtualenv-path:
 pull-staging-env-vars:
 	$(call header,"Saving env vars to .env.staging")
 	heroku config -s -a api-staging-collabsauce > .env.staging
+	echo 'SENTRY_RELEASE=$(shell git rev-parse --short HEAD)' >> .env.staging
 
 # get env vars for staging environment (using heroku)
 pull-production-env-vars:
 	$(call header,"Saving env vars to .env.production")
 	heroku config -s -a api-production-collabsauce > .env.production
+	echo 'SENTRY_RELEASE=$(shell git rev-parse --short HEAD)' >> .env.production
 
 # rebuild the collab_backend_web container
 rebuild-collab-backend-web:

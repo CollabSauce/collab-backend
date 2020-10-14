@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 
 from corsheaders.defaults import default_headers
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -112,8 +114,6 @@ ENVIRONMENT = os.environ.get('ENVIRONMENT', 'development')
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-# DATABASES = {}
-# if ENVIRONMENT == 'development':
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -124,9 +124,6 @@ DATABASES = {
         "PORT": os.environ.get("POSTGRES_PORT"),
     }
 }
-# else:
-#     # uses the DATABASE_URL env var
-#     DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -277,10 +274,8 @@ S3_BUCKET = os.environ.get(
 )
 
 #######
-# For heroku:
 # For deployment environment:
 #######
-# PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Extra places for collectstatic to find static files.
@@ -294,6 +289,20 @@ STATICFILES_DIRS = (
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 #######
-# End For heroku
 # End For deployment environment
 #######
+if ENVIRONMENT != 'development':
+    sentry_sdk.init(
+        dsn="https://7bb9b4e5761a4f6bb450ba9d87269266@o460199.ingest.sentry.io/5462835",
+        integrations=[DjangoIntegration()],
+        environment=ENVIRONMENT,
+        release=os.environ.get('SENTRY_RELEASE', ''),
+
+        # Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring.
+        # Sentry recommends adjusting this value in production,
+        traces_sample_rate=1.0 if ENVIRONMENT == 'production' else 0,
+
+        # If you wish to associate users to errors (assuming you are using
+        # django.contrib.auth) you may enable sending PII data.
+        send_default_pii=True
+    )
