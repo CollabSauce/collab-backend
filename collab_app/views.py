@@ -1,4 +1,5 @@
 from allauth.account.models import EmailAddress
+from django.db import transaction
 from django.utils.crypto import get_random_string
 from dynamic_rest.viewsets import DynamicModelViewSet
 from rest_framework.decorators import action
@@ -437,8 +438,14 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
         window_width = task_metadata.browser_window_width
         window_height = task_metadata.browser_window_height
         task_html = TaskHtml.objects.create(task=task, html=html)
-        create_screenshots_for_task.delay(
-            task_id, task_html.id, browser_name, device_scale_factor, window_width, window_height
+
+        # wrap in transaction.on_commit. see below links:
+        # https://browniebroke.com/blog/making-celery-work-nicely-with-django-transactions/
+        # https://docs.celeryproject.org/en/latest/userguide/tasks.html?highlight=on_commit#database-transactions
+        transaction.on_commit(
+            lambda: create_screenshots_for_task.delay(
+                task_id, task_html.id, browser_name, device_scale_factor, window_width, window_height
+            )
         )
 
         return Response({
