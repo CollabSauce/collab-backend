@@ -291,6 +291,14 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 #######
 # End For deployment environment
 #######
+print('_________')
+print('_________')
+print('_________')
+print(ENVIRONMENT)
+print(CELERY_DEFAULT_QUEUE)
+print('_________')
+print('_________')
+print('_________')
 if ENVIRONMENT != 'development':
     sentry_sdk.init(
         dsn="https://7bb9b4e5761a4f6bb450ba9d87269266@o460199.ingest.sentry.io/5462835",
