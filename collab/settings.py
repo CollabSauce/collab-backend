@@ -248,7 +248,7 @@ if ENVIRONMENT == 'development':
     CELERY_BROKER_URL = os.environ.get('CLOUDAMQP_URL', '')
 else:
     CELERY_BROKER_URL = f'sqs://{AWS_ACCESS_KEY_ID}:{AWS_SECRET_ACCESS_KEY}@'
-    CELERY_DEFAULT_QUEUE = os.environ.get('CELERY_DEFAULT_QUEUE', 'collab-staging')
+    CELERY_CELERY_DEFAULT_QUEUE = os.environ.get('CELERY_DEFAULT_QUEUE', 'collab-staging')
     CELERY_BROKER_TRANSPORT_OPTIONS = {
         'region': AWS_REGION
     }
@@ -295,7 +295,7 @@ print('_________')
 print('_________')
 print('_________')
 print(ENVIRONMENT)
-print(CELERY_DEFAULT_QUEUE)
+print(CELERY_CELERY_DEFAULT_QUEUE)
 print('_________')
 print('_________')
 print('_________')
