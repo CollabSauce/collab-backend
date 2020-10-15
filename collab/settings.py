@@ -248,7 +248,7 @@ if ENVIRONMENT == 'development':
     CELERY_BROKER_URL = os.environ.get('CLOUDAMQP_URL', '')
 else:
     CELERY_BROKER_URL = f'sqs://{AWS_ACCESS_KEY_ID}:{AWS_SECRET_ACCESS_KEY}@'
-    CELERY_TASK_DEFAULT_QUEUE = os.environ.get('CELERY_DEFAULT_QUEUE', 'collabsauce-staging')
+    CELERY_TASK_DEFAULT_QUEUE = os.environ.get('CELERY_TASK_DEFAULT_QUEUE', 'collabsauce-staging')
     CELERY_BROKER_TRANSPORT_OPTIONS = {
         'region': AWS_REGION
     }
@@ -291,14 +291,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 #######
 # End For deployment environment
 #######
-print('_________')
-print('_________')
-print('_________')
-print(ENVIRONMENT)
-print(CELERY_TASK_DEFAULT_QUEUE)
-print('_________')
-print('_________')
-print('_________')
 if ENVIRONMENT != 'development':
     sentry_sdk.init(
         dsn="https://7bb9b4e5761a4f6bb450ba9d87269266@o460199.ingest.sentry.io/5462835",

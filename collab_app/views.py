@@ -335,7 +335,7 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
         # but just incase, loop through the list.
         # Also note: we can't do this in a signal because of the `bulk_update`.
         for moved_task_data in tasks_that_changed_columns:
-            notify_participants_of_task_column_change.delay(
+            notify_participants_of_task_column_change.delay_on_commit(
                 moved_task_data['task_id'],
                 moved_task_data['prev_task_column_id'],
                 moved_task_data['new_task_column_id'],
@@ -439,16 +439,9 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
         window_height = task_metadata.browser_window_height
         task_html = TaskHtml.objects.create(task=task, html=html)
 
-        # wrap in transaction.on_commit. see below links:
-        # https://browniebroke.com/blog/making-celery-work-nicely-with-django-transactions/
-        # https://docs.celeryproject.org/en/latest/userguide/tasks.html?highlight=on_commit#database-transactions
-        def call_take_screenshot():
-            print('on_commit occurred. calling `create_screenshots_for_task.delay`')
-            create_screenshots_for_task.delay(
-                task_id, task_html.id, browser_name, device_scale_factor, window_width, window_height
-            )
-
-        transaction.on_commit(call_take_screenshot)
+        create_screenshots_for_task.delay_on_commit(
+            task_id, task_html.id, browser_name, device_scale_factor, window_width, window_height
+        )
 
         return Response({
             'task': TaskSerializer(
@@ -503,7 +496,7 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
 
         # for consistency with `reorder` task method, manually call
         # the `notify_participants_of_task_column_change` method.
-        notify_participants_of_task_column_change.delay(
+        notify_participants_of_task_column_change.delay_on_commit(
             task_id,
             prev_task_column_id,
             task_column_id,

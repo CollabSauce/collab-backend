@@ -5,7 +5,10 @@ from django.db import transaction
 from celery import Celery, Task
 
 
-class EnhancedTask(Task):
+# wrap in transaction.on_commit. see below links:
+# https://browniebroke.com/blog/making-celery-work-nicely-with-django-transactions/
+# https://docs.celeryproject.org/en/latest/userguide/tasks.html?highlight=on_commit#database-transactions
+class TransactionAwareTask(Task):
     def delay_on_commit(self, *args, **kwargs):
         return transaction.on_commit(
             lambda: self.delay(*args, **kwargs)
@@ -14,7 +17,7 @@ class EnhancedTask(Task):
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'collab.settings')
-app = Celery('collab', task_cls=EnhancedTask)
+app = Celery('collab', task_cls=TransactionAwareTask)
 
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.

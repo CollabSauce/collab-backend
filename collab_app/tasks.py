@@ -23,10 +23,6 @@ from collab_app.utils import (
 
 @shared_task
 def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scale_factor, window_width, window_height):
-    print('task_id:')
-    print(task_id)
-    print('task_html_id:')
-    print(task_html_id)
     task = Task.objects.get(id=task_id)
     task_html = TaskHtml.objects.get(id=task_html_id)
     html = task_html.html
