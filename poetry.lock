@@ -294,6 +294,17 @@ version = "3.0.8"
 
 [[package]]
 category = "main"
+description = "Django middleware that logs http request body."
+name = "django-request-logging"
+optional = false
+python-versions = "*"
+version = "0.7.2"
+
+[package.dependencies]
+Django = "*"
+
+[[package]]
+category = "main"
 description = "Web APIs for Django, made easy."
 name = "djangorestframework"
 optional = false
@@ -946,6 +957,17 @@ version = "1.3.0"
 
 [[package]]
 category = "main"
+description = "Python CloudWatch Logging"
+name = "watchtower"
+optional = false
+python-versions = "*"
+version = "0.8.0"
+
+[package.dependencies]
+boto3 = ">=1.9.253,<2"
+
+[[package]]
+category = "main"
 description = "Measures the displayed width of unicode strings in a terminal"
 name = "wcwidth"
 optional = false
@@ -977,7 +999,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "2fcb49e40f8721847345cb0a482d667b2d956e0b8ac61cfb65076f12e9c9bae0"
+content-hash = "3c5f1e39e0db36199e0a0ec6047523f5bfb0e6196e41098207374bfd26562c35"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -1070,6 +1092,10 @@ django-debug-toolbar = [
 django-extensions = [
     {file = "django-extensions-3.0.8.tar.gz", hash = "sha256:a67747508ec39583892fbddf57e0b66b3f332a885ef5520698bc2e1cb351955a"},
     {file = "django_extensions-3.0.8-py3-none-any.whl", hash = "sha256:c7c2ca48ccc2ecc4427c908cd3a6dc114fc7534092de51209b02f84ccafe648b"},
+]
+django-request-logging = [
+    {file = "django-request-logging-0.7.2.tar.gz", hash = "sha256:5ac99bc885bd30b3b59d3ea8e28ec7fa5d5343748f752cc3ef0c98c1ccf206a8"},
+    {file = "django_request_logging-0.7.2-py2.py3-none-any.whl", hash = "sha256:7c1c6e5fee02a95e4c85e3ebfcc3e0db0b436c8b2bd1f41d645b8e10ee365633"},
 ]
 djangorestframework = [
     {file = "djangorestframework-3.11.1-py3-none-any.whl", hash = "sha256:8b1ac62c581dbc5799b03e535854b92fc4053ecfe74bad3f9c05782063d4196b"},
@@ -1328,6 +1354,10 @@ urllib3 = [
 vine = [
     {file = "vine-1.3.0-py2.py3-none-any.whl", hash = "sha256:ea4947cc56d1fd6f2095c8d543ee25dad966f78692528e68b4fada11ba3f98af"},
     {file = "vine-1.3.0.tar.gz", hash = "sha256:133ee6d7a9016f177ddeaf191c1f58421a1dcc6ee9a42c58b34bed40e1d2cd87"},
+]
+watchtower = [
+    {file = "watchtower-0.8.0-py2.py3-none-any.whl", hash = "sha256:d6704b258494bddc3e9ddda286ef5067e4b09ab4287aea4289afdd035cc4742b"},
+    {file = "watchtower-0.8.0.tar.gz", hash = "sha256:9733d1dfc2ab25880386188ee41b19d39893a09c91725bd92b2f782a72890fda"},
 ]
 wcwidth = [
     {file = "wcwidth-0.2.5-py2.py3-none-any.whl", hash = "sha256:beb4802a9cebb9144e99086eff703a642a13d6a0052920003a230f3294bbe784"},

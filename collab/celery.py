@@ -1,8 +1,11 @@
 from __future__ import absolute_import
+import logging
 import os
 from django.db import transaction
 
 from celery import Celery, Task
+
+logger = logging.getLogger('collabsauce')
 
 
 # wrap in transaction.on_commit. see below links:
@@ -31,4 +34,4 @@ app.autodiscover_tasks()
 
 @app.task(bind=True)
 def debug_task(self):
-    print('Request: {0!r}'.format(self.request))
+    logger.info('Request: {0!r}'.format(self.request))

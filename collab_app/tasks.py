@@ -1,4 +1,5 @@
 import os
+import logging
 import re
 
 import boto3
@@ -19,6 +20,8 @@ from collab_app.models import (
 from collab_app.utils import (
     send_email
 )
+
+logger = logging.getLogger('collabsauce')
 
 
 @shared_task
@@ -132,9 +135,9 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
         os.remove(window_screenshot_filepath)
         os.remove(element_screenshot_filepath)
     except Exception as err:
-        print('Error while deleting files')
+        logger.info('Error while deleting files')
         capture_exception(err)
-        print(err)
+        logger.info(err)
 
     task.window_screenshot_url = f'https://s3-{settings.AWS_REGION}.amazonaws.com/{s3_bucket}/{window_file_name}'
     task.element_screenshot_url = f'https://s3-{settings.AWS_REGION}.amazonaws.com/{s3_bucket}/{element_file_name}'
@@ -165,9 +168,9 @@ def notify_participants_of_task(task_id):
             send_email(subject, body, settings.EMAIL_HOST_USER, [assignee.email], fail_silently=False)
             already_mentioned.add(assignee)
         except Exception as err:
-            print('Error while notifying assignee on task create')
+            logger.info('Error while notifying assignee on task create')
             capture_exception(err)
-            print(err)
+            logger.info(err)
 
     # match the id from `@@@__<ID HERE>^^^Some Name@@@^^^`
 
@@ -186,9 +189,9 @@ def notify_participants_of_task(task_id):
                 send_email(subject, body, settings.EMAIL_HOST_USER, [mentioned.email], fail_silently=False)
                 already_mentioned.add(mentioned)
         except Exception as err:
-            print('Error while notifying on task create')
+            logger.info('Error while notifying on task create')
             capture_exception(err)
-            print(err)
+            logger.info(err)
 
 
 @shared_task
@@ -217,9 +220,9 @@ def notify_participants_of_task_comment(task_comment_id):
             send_email(subject, body, settings.EMAIL_HOST_USER, [mentioned.email], fail_silently=False)
             already_mentioned.add(mentioned)
         except Exception as err:
-            print('Error while notifying on task comment create')
+            logger.info('Error while notifying on task comment create')
             capture_exception(err)
-            print(err)
+            logger.info(err)
 
     # notify the task creator and task.assigned_to . If they are the same person, logic below already handles duplicates
     users_to_notify = [task.creator, task.assigned_to]
@@ -249,9 +252,9 @@ def notify_participants_of_task_comment(task_comment_id):
                 send_email(subject, body, settings.EMAIL_HOST_USER, [user.email], fail_silently=False)
                 already_mentioned.add(user)
             except Exception as err:
-                print('Error while notifying on task comment notify all create')
+                logger.info('Error while notifying on task comment notify all create')
                 capture_exception(err)
-                print(err)
+                logger.info(err)
 
 
 @shared_task
@@ -267,9 +270,9 @@ def notify_participants_of_assignee_change(task_id):
         })
         send_email(subject, body, settings.EMAIL_HOST_USER, [assignee.email], fail_silently=False)
     except Exception as err:
-        print('Error while notifying assignee on task update')
+        logger.info('Error while notifying assignee on task update')
         capture_exception(err)
-        print(err)
+        logger.info(err)
 
 
 @shared_task
@@ -319,6 +322,6 @@ def notify_participants_of_task_column_change(task_id, prev_task_column_id, new_
                 send_email(subject, body, settings.EMAIL_HOST_USER, [user.email], fail_silently=False)
                 already_mentioned.add(user)
             except Exception as err:
-                print('Error while notifying on task move notify all')
+                logger.info('Error while notifying on task move notify all')
                 capture_exception(err)
-                print(err)
+                logger.info(err)

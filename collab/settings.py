@@ -10,8 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
+import logging
 import os
 
+from boto3.session import Session
 from corsheaders.defaults import default_headers
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -62,6 +64,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'request_logging.middleware.LoggingMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -235,10 +238,10 @@ else:
     elif email_ssl == 'False':
         EMAIL_USE_SSL = False
 
-# AWS REGION - needed for celery and screenshot task
+# AWS REGION - needed for celery and screenshot task and logging
 AWS_REGION = os.getenv('AWS_REGION', 'us-west-2')
 
-# AWS_CREDS (used for celery)
+# AWS_CREDS (used for celery) (and logging)
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
 
@@ -291,6 +294,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 #######
 # End For deployment environment
 #######
+
+# Sentry
 if ENVIRONMENT != 'development':
     sentry_sdk.init(
         dsn="https://7bb9b4e5761a4f6bb450ba9d87269266@o460199.ingest.sentry.io/5462835",
@@ -306,3 +311,53 @@ if ENVIRONMENT != 'development':
         # django.contrib.auth) you may enable sending PII data.
         send_default_pii=True
     )
+
+# Logging
+# https://dev.to/jordanahaines/django-and-cloudwatch-logging-in-a-place-you-can-see-3bc7
+logger_boto3_session = Session(
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    region_name=AWS_REGION,
+)
+CONSOLE_HANDLER = 'console'
+WATCHTOWER_HANDLER = 'watchtower'
+HANDLER = CONSOLE_HANDLER if ENVIRONMENT == 'development' else WATCHTOWER_HANDLER
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    'root': {
+        'level': logging.ERROR,
+        'handlers': [CONSOLE_HANDLER],
+    },
+    "formatters": {
+        "aws": {
+            # you can add specific format for aws here
+            # if you want to change format, you can read:
+            #    https://stackoverflow.com/questions/533048/how-to-log-source-file-name-and-line-number-in-python/44401529
+            # "format": "%(asctime)s [%(levelname)-8s] [ENV: %(env)s] %(message)s [%(pathname)s:%(lineno)d]",
+            "format": "%(asctime)s [%(levelname)-8s] %(message)s [%(pathname)s:%(lineno)d]",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+    },
+    "filters": {"aws": {"()": "collab.logging.CloudwatchLoggingFilter"}},
+    "handlers": {
+        WATCHTOWER_HANDLER: {
+            "level": "INFO",
+            "class": "watchtower.CloudWatchLogHandler",
+            "boto3_session": logger_boto3_session,
+            "log_group": "CollabSauceLogs",
+            "stream_name": f"{ENVIRONMENT}-logs",
+            "formatter": "aws",
+        },
+        CONSOLE_HANDLER: {"class": "logging.StreamHandler", "formatter": "aws",},
+    },
+    "loggers": {
+        # Use this logger to send data just to Cloudwatch if on staging or prod, use console if development
+        "collabsauce": {"level": "INFO", "handlers": [HANDLER], "propogate": False},
+        'django.request': {
+            'handlers': [HANDLER],
+            'level': 'INFO',  # change debug level as appropriate
+            'propagate': False,
+        },
+    },
+}
