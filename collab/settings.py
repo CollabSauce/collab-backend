@@ -339,7 +339,10 @@ LOGGING = {
             "datefmt": "%Y-%m-%d %H:%M:%S",
         },
     },
-    "filters": {"aws": {"()": "collab.logging.CloudwatchLoggingFilter"}},
+    "filters": {
+        "aws": {"()": "collab.logging.CloudwatchLoggingFilter"},
+        "django.request": {"()": "collab.logging.RequestLoggingFilter"}
+    },
     "handlers": {
         WATCHTOWER_HANDLER: {
             "level": "INFO",
@@ -353,11 +356,21 @@ LOGGING = {
     },
     "loggers": {
         # Use this logger to send data just to Cloudwatch if on staging or prod, use console if development
-        "collabsauce": {"level": "INFO", "handlers": [HANDLER], "propogate": False},
+        "collabsauce": {
+            "level": "INFO",
+            "handlers": [HANDLER],
+            "propagate": False,
+            "filters": ["aws"]
+        },
         'django.request': {
             'handlers': [HANDLER],
-            'level': 'INFO',  # change debug level as appropriate
+            'level': 'INFO' if ENVIRONMENT == 'development' else 'DEBUG',
             'propagate': False,
+            "filters": ["django.request"]
         },
     },
 }
+
+
+# django-request-logging
+REQUEST_LOGGING_ENABLE_COLORIZE=False
