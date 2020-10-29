@@ -54,8 +54,8 @@ class Task(BaseModel):
         constraints = [
             models.UniqueConstraint(fields=['task_number', 'project'], name='unique_tasknumber_project'),
             models.CheckConstraint(
-                name="%(app_label)s_%(class)s_title_or_design_edits",
-                check=(~Q(title='') | ~Q(design_edits=''))
+                name="%(app_label)s_%(class)s_title_or_design_edits_or_text_changes",
+                check=(~Q(title='') | ~Q(design_edits='') | Q(has_text_copy_changes=True))
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_target_id_or_dom_path",
