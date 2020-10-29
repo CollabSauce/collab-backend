@@ -8,6 +8,8 @@ class Task(BaseModel):
     title = models.TextField(blank=True, default='')
     description = models.TextField(blank=True, default='')
     design_edits = models.TextField(blank=True, default='')
+    text_copy_changes = models.TextField(blank=True, default='')
+    has_text_copy_changes = models.BooleanField(default=False)
     window_screenshot_url = models.TextField(blank=True, default='')
     element_screenshot_url = models.TextField(blank=True, default='')
     task_number = models.PositiveIntegerField()

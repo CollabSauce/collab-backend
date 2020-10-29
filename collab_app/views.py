@@ -355,18 +355,18 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
         # NOTE: `is_authed` means the user is authenticated and has access to the project.
         # If they don't, the `creator` will be None and we will set the `one_off_email_set_by` field.
 
-        task_request_data = request.data['task']
-        task_metadata_request_data = request.data['task_metadata']
-        html = request.data['html']
+        task_request_data = request.data.get('task')
+        task_metadata_request_data = request.data.get('task_metadata')
+        html = request.data.get('html')
 
-        is_authed = request.user.is_authenticated and task_request_data['project']
+        is_authed = request.user.is_authenticated and task_request_data.get('project')
 
         # if the user is_authed, then they will have access to the project.
         # But if they are sending this method as non-authed, then they will only
         # send the `project_key`. We need to get the project_id based off this key.
-        project_id = task_request_data['project']
+        project_id = task_request_data.get('project')
         if not project_id:
-            project_key = task_request_data['project_key']
+            project_key = task_request_data.get('project_key')
             project = Project.objects.filter(key=project_key).first()
             if not project:
                 raise exceptions.ValidationError(
@@ -403,33 +403,35 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
             task_column=task_column
         ).order_by('-order').first()
         task = Task.objects.create(
-            title=task_request_data['title'],
-            target_dom_path=task_request_data['target_dom_path'],
-            design_edits=task_request_data['design_edits'],
+            title=task_request_data.get('title'),
+            target_dom_path=task_request_data.get('target_dom_path'),
+            design_edits=task_request_data.get('design_edits'),
+            text_copy_changes=task_request_data.get('text_copy_changes'),
+            has_text_copy_changes=task_request_data.get('has_text_copy_changes'),
             order=last_task_in_column.order + 1 if last_task_in_column else 1,
             project_id=project_id,
             task_column=task_column,
             assigned_to_id=assigned_to_id,
             creator=request.user if is_authed else None,
-            one_off_email_set_by=task_request_data['one_off_email_set_by'],
+            one_off_email_set_by=task_request_data.get('one_off_email_set_by'),
             task_number=next_number
         )
         task_metadata = TaskMetadata.objects.create(
             task=task,
-            url_origin=task_metadata_request_data['url_origin'],
-            os_name=task_metadata_request_data['os_name'],
-            os_version=task_metadata_request_data['os_version'],
-            os_version_name=task_metadata_request_data['os_version_name'],
-            browser_name=task_metadata_request_data['browser_name'],
-            browser_version=task_metadata_request_data['browser_version'],
-            selector=task_metadata_request_data['selector'],
-            screen_height=task_metadata_request_data['screen_height'],
-            screen_width=task_metadata_request_data['screen_width'],
-            device_pixel_ratio=task_metadata_request_data['device_pixel_ratio'],
-            browser_window_width=task_metadata_request_data['browser_window_width'],
-            browser_window_height=task_metadata_request_data['browser_window_height'],
-            color_depth=task_metadata_request_data['color_depth'],
-            pixel_depth=task_metadata_request_data['pixel_depth'],
+            url_origin=task_metadata_request_data.get('url_origin'),
+            os_name=task_metadata_request_data.get('os_name'),
+            os_version=task_metadata_request_data.get('os_version'),
+            os_version_name=task_metadata_request_data.get('os_version_name'),
+            browser_name=task_metadata_request_data.get('browser_name'),
+            browser_version=task_metadata_request_data.get('browser_version'),
+            selector=task_metadata_request_data.get('selector'),
+            screen_height=task_metadata_request_data.get('screen_height'),
+            screen_width=task_metadata_request_data.get('screen_width'),
+            device_pixel_ratio=task_metadata_request_data.get('device_pixel_ratio'),
+            browser_window_width=task_metadata_request_data.get('browser_window_width'),
+            browser_window_height=task_metadata_request_data.get('browser_window_height'),
+            color_depth=task_metadata_request_data.get('color_depth'),
+            pixel_depth=task_metadata_request_data.get('pixel_depth'),
         )
 
         task_id = task.id
