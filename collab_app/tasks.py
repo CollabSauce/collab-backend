@@ -90,6 +90,15 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
                 el.checked = true;
             });
             document.getElementById('collab-sauce-iframe').style.display = 'none';
+            document.querySelectorAll('.collabsauce-tick-ruler').forEach(el => {
+                el.style.display = 'none';
+            });
+            document.querySelectorAll('.collabsauce-ruler-top-corner').forEach(el => {
+                el.style.display = 'none';
+            });
+            document.querySelectorAll('.collabsauce-web-paint-toolbar').forEach(el => {
+                el.style.display = 'none';
+            });
             document.querySelector('.CollabSauce__outline__') &&
                 document.querySelector('.CollabSauce__outline__').classList.remove('CollabSauce__outline__');
             document.querySelectorAll('[collabsauce-href]').forEach(el => {
