@@ -16,6 +16,7 @@ class Task(BaseModel):
     is_resolved = models.BooleanField(default=False)
     target_id = models.TextField(blank=True, default='')
     target_dom_path = models.TextField(blank=True, default='')
+    has_target = models.BooleanField(default=True)
     one_off_email_set_by = models.TextField(blank=True, default='')
 
     # for ordering inside a task_column
@@ -58,8 +59,8 @@ class Task(BaseModel):
                 check=(~Q(title='') | ~Q(design_edits='') | Q(has_text_copy_changes=True))
             ),
             models.CheckConstraint(
-                name="%(app_label)s_%(class)s_target_id_or_dom_path",
-                check=(~Q(target_id='') | ~Q(target_dom_path=''))
+                name="%(app_label)s_%(class)s_target_id_or_dom_path_or_no_target",
+                check=(~Q(target_id='') | ~Q(target_dom_path='') | Q(has_target=False))
             )
         ]
 

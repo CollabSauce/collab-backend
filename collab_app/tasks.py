@@ -114,9 +114,10 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
         # wait 2 extra seconds just incase
         page.waitForTimeout(2000)
         page.screenshot(path=window_screenshot_filepath, type='png')
-        page.waitForSelector('[data-collab-selected-element]');
-        element = page.querySelector('[data-collab-selected-element]')
-        element.screenshot(path=element_screenshot_filepath, type='png')
+        if task.has_target:
+            page.waitForSelector('[data-collab-selected-element]');
+            element = page.querySelector('[data-collab-selected-element]')
+            element.screenshot(path=element_screenshot_filepath, type='png')
         browser.close()
 
     s3 = boto3.resource('s3')
@@ -131,25 +132,28 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
             'ContentType': 'image/png'
         }
     )
-    s3.meta.client.upload_file(
-        Filename=element_screenshot_filepath,
-        Bucket=s3_bucket,
-        Key=element_file_name,
-        ExtraArgs={
-            'ContentType': 'image/png'
-        }
-    )
+    if task.has_target:
+        s3.meta.client.upload_file(
+            Filename=element_screenshot_filepath,
+            Bucket=s3_bucket,
+            Key=element_file_name,
+            ExtraArgs={
+                'ContentType': 'image/png'
+            }
+        )
 
     try:
         os.remove(window_screenshot_filepath)
-        os.remove(element_screenshot_filepath)
+        if task.has_target:
+            os.remove(element_screenshot_filepath)
     except Exception as err:
         logger.info('Error while deleting files')
         capture_exception(err)
         logger.info(err)
 
     task.window_screenshot_url = f'https://s3-{settings.AWS_REGION}.amazonaws.com/{s3_bucket}/{window_file_name}'
-    task.element_screenshot_url = f'https://s3-{settings.AWS_REGION}.amazonaws.com/{s3_bucket}/{element_file_name}'
+    if task.has_target:
+        task.element_screenshot_url = f'https://s3-{settings.AWS_REGION}.amazonaws.com/{s3_bucket}/{element_file_name}'
     task.save()
     task_html.delete()
 

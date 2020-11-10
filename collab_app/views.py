@@ -408,6 +408,7 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
             design_edits=task_request_data.get('design_edits'),
             text_copy_changes=task_request_data.get('text_copy_changes'),
             has_text_copy_changes=task_request_data.get('has_text_copy_changes'),
+            has_target=task_request_data.get('has_target'),
             order=last_task_in_column.order + 1 if last_task_in_column else 1,
             project_id=project_id,
             task_column=task_column,
