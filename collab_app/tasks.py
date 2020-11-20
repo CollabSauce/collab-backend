@@ -1,3 +1,4 @@
+import base64
 import os
 import logging
 import re
@@ -14,6 +15,7 @@ from collab_app.models import (
     Task,
     TaskColumn,
     TaskComment,
+    TaskDataUrl,
     TaskHtml,
     User
 )
@@ -29,15 +31,8 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
     task = Task.objects.get(id=task_id)
     task_html = TaskHtml.objects.get(id=task_html_id)
     html = task_html.html
-    project = task.project
-    organization = project.organization
 
-    file_key = get_random_string(length=32)
-    window_screenshot_filepath = f'tmp/{file_key}-window.png'
-    element_screenshot_filepath = f'tmp/{file_key}-element.png'
-
-    if not os.path.exists('tmp'):
-        os.makedirs('tmp')
+    file_key, window_screenshot_filepath, element_screenshot_filepath = get_filekey_and_filepaths()
 
     with sync_playwright() as p:
         lower_bname = browser_name.lower()
@@ -120,6 +115,44 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
             element.screenshot(path=element_screenshot_filepath, type='png')
         browser.close()
 
+    upload_screenshots(task, file_key, window_screenshot_filepath, element_screenshot_filepath)
+    task_html.delete()
+
+
+@shared_task
+def upload_chrome_extension_screenshots_for_task(task_id, task_data_url_id):
+    task = Task.objects.get(id=task_id)
+    task_data_url = TaskDataUrl.objects.get(id=task_data_url_id)
+    window_screenshot_data_url = task_data_url.window_screenshot_data_url
+    element_screenshot_data_url = task_data_url.element_screenshot_data_url
+
+    file_key, window_screenshot_filepath, element_screenshot_filepath = get_filekey_and_filepaths()
+
+    with open(window_screenshot_filepath, 'wb') as f:
+        f.write(base64.b64decode(re.sub('data:image/png;base64,', '', window_screenshot_data_url)))
+
+    if task.has_target:
+        with open(element_screenshot_filepath, 'wb') as f:
+            f.write(base64.b64decode(re.sub('data:image/png;base64,', '', element_screenshot_data_url)))
+
+    upload_screenshots(task, file_key, window_screenshot_filepath, element_screenshot_filepath)
+    task_data_url.delete()
+
+
+def get_filekey_and_filepaths():
+    if not os.path.exists('tmp'):
+        os.makedirs('tmp')
+
+    file_key = get_random_string(length=32)
+    window_screenshot_filepath = f'tmp/{file_key}-window.png'
+    element_screenshot_filepath = f'tmp/{file_key}-element.png'
+    return file_key, window_screenshot_filepath, element_screenshot_filepath
+
+
+def upload_screenshots(task, file_key, window_screenshot_filepath, element_screenshot_filepath):
+    project = task.project
+    organization = project.organization
+
     s3 = boto3.resource('s3')
     s3_bucket = getattr(settings, 'S3_BUCKET')
     window_file_name = f'{organization.id}/{project.id}/{file_key}-window.png'
@@ -155,7 +188,6 @@ def create_screenshots_for_task(task_id, task_html_id, browser_name, device_scal
     if task.has_target:
         task.element_screenshot_url = f'https://s3-{settings.AWS_REGION}.amazonaws.com/{s3_bucket}/{element_file_name}'
     task.save()
-    task_html.delete()
 
 
 @shared_task

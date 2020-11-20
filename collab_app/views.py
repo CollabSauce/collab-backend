@@ -27,6 +27,7 @@ from collab_app.models import (
     Task,
     TaskColumn,
     TaskComment,
+    TaskDataUrl,
     TaskHtml,
     TaskMetadata,
     User,
@@ -48,7 +49,8 @@ from collab_app.serializers import (
 )
 from collab_app.tasks import (
     create_screenshots_for_task,
-    notify_participants_of_task_column_change
+    notify_participants_of_task_column_change,
+    upload_chrome_extension_screenshots_for_task,
 )
 
 
@@ -235,6 +237,12 @@ class ProjectViewSet(NoUpdateMixin, NoDeleteMixin, ApiViewSet):
         request.data['organization'] = membership.organization.id
         return super(ProjectViewSet, self).create(request, *args, **kwargs)
 
+    @action(detail=False, methods=['get'], permission_classes=(AllowAny,), authentication_classes=())
+    def retrieve_project_key(self, request, *args, **kwargs):
+        parent_origin = request.query_params.get('parent_origin')
+        project = Project.objects.filter(url=parent_origin).first()
+        return Response({'project_key': project.key if project else None}, status=200)
+
 
 class TaskViewSet(ReadOnlyMixin, ApiViewSet):
     model = Task
@@ -357,7 +365,9 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
 
         task_request_data = request.data.get('task')
         task_metadata_request_data = request.data.get('task_metadata')
-        html = request.data.get('html')
+        html = request.data.get('html', None)
+        data_url = request.data.get('data_url', None)
+        element_data_url = request.data.get('element_data_url', None)
 
         is_authed = request.user.is_authenticated and task_request_data.get('project')
 
@@ -436,15 +446,24 @@ class TaskViewSet(ReadOnlyMixin, ApiViewSet):
         )
 
         task_id = task.id
-        browser_name = task_metadata.browser_name
-        device_scale_factor = task_metadata.device_pixel_ratio
-        window_width = task_metadata.browser_window_width
-        window_height = task_metadata.browser_window_height
-        task_html = TaskHtml.objects.create(task=task, html=html)
-
-        create_screenshots_for_task.delay_on_commit(
-            task_id, task_html.id, browser_name, device_scale_factor, window_width, window_height
-        )
+        if html:
+            browser_name = task_metadata.browser_name
+            device_scale_factor = task_metadata.device_pixel_ratio
+            window_width = task_metadata.browser_window_width
+            window_height = task_metadata.browser_window_height
+            task_html = TaskHtml.objects.create(task=task, html=html)
+            create_screenshots_for_task.delay_on_commit(
+                task_id, task_html.id, browser_name, device_scale_factor, window_width, window_height
+            )
+        elif data_url or element_data_url:
+            task_data_url = TaskDataUrl.objects.create(
+                task=task,
+                window_screenshot_data_url=data_url or '',
+                element_screenshot_data_url=element_data_url or ''
+            )
+            upload_chrome_extension_screenshots_for_task.delay_on_commit(
+                task_id, task_data_url.id
+            )
 
         return Response({
             'task': TaskSerializer(

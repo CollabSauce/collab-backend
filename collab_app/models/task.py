@@ -128,3 +128,17 @@ class TaskHtml(BaseModel):
     )
 
     html = models.TextField(default='')
+
+# sqs can only send 256kb of data. The data_url and element_data_url might be
+# larger than 256kb. Therefore, save that data_url and element_data_url data
+# in this model temporarily, so that the asynchronous task can just get
+# the data_urls from this model.
+class TaskDataUrl(BaseModel):
+    task = models.ForeignKey(
+        'collab_app.Task',
+        related_name='task_data_urls',
+        on_delete=models.CASCADE
+    )
+
+    window_screenshot_data_url = models.TextField(default='')
+    element_screenshot_data_url = models.TextField(default='')
