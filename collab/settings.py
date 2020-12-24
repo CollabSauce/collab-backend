@@ -374,3 +374,7 @@ LOGGING = {
 
 # django-request-logging
 REQUEST_LOGGING_ENABLE_COLORIZE=False
+
+# fixes so we can uploard large images from chrome extensions
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5mb
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5mb
